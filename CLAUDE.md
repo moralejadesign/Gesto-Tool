@@ -6,7 +6,8 @@ Herramienta web para posar maniquíes de dibujo de madera en 3D y usarlos como r
 
 - Un solo archivo: `index.html` (HTML + CSS + JS inline, sin build).
 - Three.js r147 en build UMD desde jsDelivr, más `OrbitControls` desde `examples/js` (la última versión con UMD es r147; desde r148 hay que usar módulos ES).
-- Para correrlo basta abrir `index.html` o servir la carpeta: `npx serve .`
+- `assets/` guarda los diseños de tatuaje (PNG con fondo transparente). `assets/alphabet/` es el alfabeto a color (a-z) y `assets/line alphabet/` el de línea (a-z, 0-9). La G del logo es `line alphabet/g.png` usada como máscara CSS; `favicon.png` y `apple-touch-icon.png` son esa G en blanco sobre un círculo casi negro. `og-image.jpg` (1200×628) es la imagen para compartir; las etiquetas `og:` y `twitter:` la apuntan con ruta relativa y hay que cambiarla a URL absoluta cuando el sitio tenga dominio.
+- Hay que servir la carpeta (`npx serve .`): abierto como `file://`, el navegador bloquea las texturas de `assets/` y los tatuajes no cargan.
 
 ## Módulos
 
@@ -67,19 +68,35 @@ figure
 - Pose del cuerpo: `hips, torso, head, armL/R, wristL/R, handL/R (dedos), legL/R`. Los presets (`BODY_PRESETS`) se escriben con `bodyPose({...})`, que solo declara lo que cambia respecto a `BASE`; una mano se puede nombrar por su preset (`handR:'Puño'`).
 - `tweenPose()` interpola objetos anidados, por eso las manos del cuerpo se animan junto con el resto.
 
+## Tatuajes
+
+- La lista está en `TATTOOS` (`[archivo sin .png, nombre en la UI]`). Para sumar un diseño: copiar el PNG a `assets/` y agregar una línea.
+- Cada tatuaje es un `DecalGeometry` (script de `examples/js` r147) proyectado sobre la pieza bajo el puntero y colgado de ella, así sigue la pose. Se guarda punto y normal en el espacio local de la pieza (`lp`, `ln`) y `placeTattoo()` regenera el decal cuando cambian tamaño, rotación o pieza (vía `pendingPlace`, una vez por frame).
+- Look de tinta: `inkMaterial()` usa mezcla multiplicar (`CustomBlending` con `DstColorFactor` y alpha premultiplicado) sobre un `MeshBasicMaterial` sin tone mapping. El blanco del diseño desaparece (el borde de sticker se vuelve madera) y el color oscurece la veta sin taparla.
+- Tamaño en cm: `cmPerUnit` es 4.8 en la Mano y 22 en el Cuerpo. El soporte del cuerpo (`noTattoo`) no se tatúa.
+- Interacción: arrastrar desde la bandeja con vista previa en vivo; un toque sin arrastrar deja el diseño listo para tocar la madera (móvil). Arrastrar un tatuaje lo mueve (el `pointerdown` va en captura para ganarle a OrbitControls). Supr lo quita, Esc deselecciona. El marco naranja de selección no sale en el JPG ni en las miniaturas (`capturing`).
+- "Copiar pose" incluye `tatuajes`. Restablecer no los quita; para eso está "Quitar todos".
+- Pestaña Letras: estilo Línea o Color y un texto de hasta 14 caracteres. `buildWord()` recorta cada letra a sus columnas con tinta, las junta en un lienzo y lo registra como un diseño más (`texto:<estilo>:<palabra>`, textura `CanvasTexture`). Acentos se quitan; caracteres que el estilo no tiene se ignoran.
+- El decal se imprime en todas las piezas hermanas de la pieza bajo el puntero (mismo grupo padre: falange + bisagra, pecho + rótula) y cuelga de ese grupo, así no se corta en una bisagra. `keepFacing()` descarta los triángulos que miran a más de ~72° de la proyección: evita manchas estiradas en los costados y que el diseño atraviese piezas delgadas.
+- Mientras se arrastra un tatuaje nuevo, su tamaño inicial sigue a la pieza bajo el puntero (`defaultCm`): 1.2 cm una letra en un dedo, 2 cm un diseño en un dedo, 4 cm en la mano, 10 cm en el cuerpo; las palabras arrancan más anchas.
+- Un tatuaje no cruza articulaciones que se mueven por separado (por ejemplo, de la palma a un dedo): se corta en el borde del grupo.
+
 ### Madera
 La textura es procedural (`makeWoodCanvas`): ruido 3D de valor con fbm, muestreado en coordenadas cilíndricas para que no haya costura alrededor del torno. Hay 4 variantes de veta y cada pieza clona una con offset aleatorio, para que parezcan talladas por separado. Las bisagras llevan un tinte un poco más oscuro (`pinTint`). Material: `MeshStandardMaterial` con `bumpMap` sobre la misma textura y roughness 0.62.
 
 ### Cámara y luz
 - El lente va en mm sobre sensor full frame: `fov = 2·atan(12/mm)`.
-- `applyLens()` mueve la cámara a `M.dist · mm/50` (15 para la mano, 22 para el cuerpo) para mantener el encuadre. Así, cambiar el lente cambia la perspectiva (escorzo) sin cambiar el tamaño. Esta función es central en la herramienta y no debe romperse.
+- `applyLens()` mueve la cámara a `M.dist · mm/50` (17 para la mano, 22 para el cuerpo) para mantener el encuadre. Así, cambiar el lente cambia la perspectiva (escorzo) sin cambiar el tamaño. Esta función es central en la herramienta y no debe romperse.
 - Vistas predefinidas en `M.views` (dirección normalizada desde el objetivo). El cuerpo usa vistas más bajas, a la altura de los ojos.
 - Luz principal direccional con sombras PCF suaves, controlada por azimut y altura. Además hay una hemisférica y un relleno frío.
 
 ### UI
 - El panel lateral se arma con `slider(container, id, label, min, max, get, set, unit)`. Cada slider lee y escribe el estado mediante closures, y `syncAll()` refresca todos después de un cambio global o un preset.
+- Layout: marco casi negro (`--frame`) con tarjetas blancas de esquinas grandes (`--radius`), monocromo con acento naranja (`--accent`) solo para foco y el destello del acordeón. Columnas: riel de iconos (módulos, Copiar pose, Restablecer, tema), escenario redondeado con el botón circular de Descargar JPG encajado en el borde y la píldora de vistas abajo, y la columna de tarjetas a la derecha.
+- Las poses se eligen con miniaturas: `makeThumbs()` renderiza cada preset con la cámara inicial del módulo a 220 px y se vuelve a llamar al cambiar el tema.
+- El botón de tema guarda `data-theme` en `localStorage`; sin preferencia guardada sigue al sistema.
 - Los colores son tokens CSS en `:root` y tienen variante oscura (`prefers-color-scheme` y `[data-theme]`). El fondo de la escena 3D lee `--stage`.
-- Tipografía: Bricolage Grotesque para la interfaz e IBM Plex Mono para los valores numéricos.
+- Tipografía: Outfit para la interfaz e IBM Plex Mono para los valores numéricos.
 
 ## Convenciones
 

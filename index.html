@@ -3,171 +3,318 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mano de Madera</title>
+<title>Mano de madera</title>
+<meta name="description" content="Maniquíes de dibujo de madera en 3D: posa la mano o el cuerpo, ajusta lente y luz, y úsalos como referencia.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gesto Tool">
+<meta property="og:description" content="Maniquíes de dibujo de madera en 3D: posa la mano o el cuerpo, ajusta lente y luz, y úsalos como referencia.">
+<meta property="og:image" content="assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta property="og:image:alt" content="Mano de madera tatuada entre flores, con el texto Gesto Tool: wooden drawing mannequins in 3D">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Gesto Tool">
+<meta name="twitter:description" content="Maniquíes de dibujo de madera en 3D: posa la mano o el cuerpo, ajusta lente y luz, y úsalos como referencia.">
+<meta name="twitter:image" content="assets/og-image.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: escenario 3D a pantalla completa + panel lateral de taller con sliders (en móvil, el panel va debajo) */
+/* Layout: marco oscuro con tarjetas redondeadas. Riel de iconos a la izquierda, escenario 3D al centro, tarjetas de control a la derecha (en móvil, todo apilado) */
 :root{
-  --stage:#e8e6e2;
-  --panel:#f6f4f0;
-  --ink:#2a241d;
-  --muted:#7a6f62;
-  --line:#ddd6cb;
-  --wood:#c99a62;
-  --wood-dark:#8a5a2b;
-  --chip:#ece6dc;
-  --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
-  --body:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --frame:#0d0d0f;
+  --card:#ffffff;
+  --stage:#e3e3e5;
+  --ink:#111113;
+  --on-ink:#ffffff;
+  --muted:#85858d;
+  --line:#ececef;
+  --line-strong:#d2d2d8;
+  --track:#e4e4e8;
+  --accent:#ff5a1f;
+  --radius:26px;
+  --display:"Outfit", "Helvetica Neue", Arial, sans-serif;
+  --body:"Outfit", "Helvetica Neue", Arial, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --stage:#2b2824;--panel:#1f1d1a;--ink:#efe8dd;--muted:#a59a8b;--line:#38332d;--wood:#d6a86f;--wood-dark:#e0b37a;--chip:#2c2925;color-scheme:dark}}
-:root[data-theme="dark"]{--stage:#2b2824;--panel:#1f1d1a;--ink:#efe8dd;--muted:#a59a8b;--line:#38332d;--wood:#d6a86f;--wood-dark:#e0b37a;--chip:#2c2925;color-scheme:dark}
+  --frame:#050506;--card:#18181b;--stage:#2a2a2e;--ink:#f2f2f3;--on-ink:#111113;--muted:#9a9aa3;--line:#26262b;--line-strong:#3a3a41;--track:#303036;color-scheme:dark}}
+:root[data-theme="dark"]{--frame:#050506;--card:#18181b;--stage:#2a2a2e;--ink:#f2f2f3;--on-ink:#111113;--muted:#9a9aa3;--line:#26262b;--line-strong:#3a3a41;--track:#303036;color-scheme:dark}
 
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0}
-body{background:var(--stage);color:var(--ink);font-family:var(--body);font-size:14px;overflow:hidden}
-.app{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%}
-.stage{position:relative;min-width:0;background:var(--stage)}
+body{margin:0;background:var(--frame);color:var(--ink);font-family:var(--body);font-size:14px;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:72px minmax(0,1fr) 352px;gap:10px;height:100%;padding:12px;-webkit-user-select:none;user-select:none}
+
+/* riel */
+.rail{display:flex;flex-direction:column;align-items:center;gap:10px;min-height:0}
+.logo{width:60px;height:60px;border-radius:50%;background:var(--card);display:grid;place-items:center;flex:none}
+/* la G sale del alfabeto de línea de los tatuajes; como máscara toma el color del tema */
+.logo-g{width:44px;height:44px;background:var(--ink);-webkit-mask:url("assets/line%20alphabet/g.png") center/contain no-repeat;mask:url("assets/line%20alphabet/g.png") center/contain no-repeat}
+.rail-pill{flex:1;width:60px;background:var(--card);border-radius:999px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0}
+.rail-sep{width:22px;height:1px;background:var(--line-strong);margin:6px 0}
+.rail-spacer{flex:1}
+.ibtn{width:44px;height:44px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink);position:relative}
+.ibtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ibtn:hover{background:var(--line)}
+.ibtn[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.ibtn .tip{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:var(--ink);color:var(--on-ink);font-size:12px;padding:5px 10px;border-radius:999px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:5}
+.ibtn:hover .tip,.ibtn:focus-visible .tip{opacity:1}
+
+/* escenario */
+.stage{position:relative;min-width:0;min-height:0}
+.stage-clip{position:absolute;inset:0;border-radius:var(--radius);overflow:hidden;background:var(--stage)}
 #view{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
 #view:active{cursor:grabbing}
-.stage-head{position:absolute;left:20px;top:16px;pointer-events:none}
-.stage-head h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0}
-.stage-head p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
-.views{position:absolute;left:16px;bottom:16px;display:flex;gap:6px;flex-wrap:wrap}
-.readout{position:absolute;right:16px;bottom:18px;font-family:var(--mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
-
-.panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:16px 18px 40px;display:flex;flex-direction:column;gap:18px}
-.mod{display:flex;flex-direction:column;gap:18px}
-.mod[hidden]{display:none}
-.mode{position:sticky;top:-16px;z-index:2;margin-top:-16px;padding:16px 0 14px;background:var(--panel);border-bottom:1px solid var(--line)}
-.mode button.chip{font-size:13.5px;padding:7px 16px;font-weight:600}
-.sec h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-button.chip{font:inherit;font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
-button.chip:hover{border-color:var(--wood)}
-button.chip[aria-pressed="true"]{background:var(--wood-dark);border-color:var(--wood-dark);color:var(--panel)}
-button.chip:focus-visible,input[type=range]:focus-visible,summary:focus-visible{outline:2px solid var(--wood-dark);outline-offset:2px}
-.stage .chip{background:color-mix(in srgb,var(--panel) 85%,transparent);backdrop-filter:blur(6px)}
-
-.row{display:grid;grid-template-columns:86px minmax(0,1fr) 44px;align-items:center;gap:10px;padding:3px 0}
-.row label{font-size:13px}
-.row output{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--line)}
-input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;margin-top:-6px;
-  background:radial-gradient(circle at 35% 30%,#f3d9b2,#c99a62 55%,#9c6a36);border:1px solid #8a5a2b;box-shadow:0 1px 2px rgba(0,0,0,.25)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3d9b2,#c99a62 55%,#9c6a36);border:1px solid #8a5a2b}
-
-details.part{border-top:1px solid var(--line)}
-details.part:last-child{border-bottom:1px solid var(--line)}
-details.part summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-weight:600;font-size:13.5px}
-details.part summary::-webkit-details-marker{display:none}
-details.part summary::after{content:"+";font-family:var(--mono);color:var(--muted);font-weight:400}
-details.part[open] summary::after{content:"–"}
-details.part .body{padding:0 0 10px}
 #view.over-part{cursor:pointer}
-@keyframes flash{from{background:color-mix(in srgb,var(--wood) 28%,transparent)}to{background:transparent}}
+.hint{position:absolute;left:22px;top:18px;right:22px;margin:0;color:var(--muted);font-size:12.5px;pointer-events:none}
+.notch{position:absolute;left:-8px;top:46%;width:52px;height:52px;border-radius:50%;border:0;background:var(--card);box-shadow:0 0 0 8px var(--frame);display:grid;place-items:center;cursor:pointer;z-index:3;color:var(--ink)}
+.notch svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.notch:hover{background:var(--ink);color:var(--on-ink)}
+.notch .tip{left:calc(100% + 12px)}
+.notch:hover .tip,.notch:focus-visible .tip{opacity:1}
+.views{position:absolute;left:16px;bottom:16px;display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:5px 6px 5px 5px;max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none}
+.views .dot{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;flex:none;margin-right:4px}
+.views .dot svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.views button{border:0;background:transparent;border-radius:999px;padding:7px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.views button:hover{background:var(--line)}
+.readout{position:absolute;right:16px;bottom:22px;font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;pointer-events:none}
+.toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--on-ink);font-size:12.5px;padding:8px 14px;border-radius:999px;z-index:4}
+
+/* columna de control */
+.side{display:flex;flex-direction:column;gap:10px;min-height:0}
+.title-pill{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:999px;padding:6px 18px 6px 6px;flex:none}
+.title-pill .dot{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;flex:none}
+.title-pill .dot svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.title-pill h1{font-family:var(--display);font-size:16px;font-weight:600;margin:0;letter-spacing:-.01em}
+.panel{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-radius:var(--radius);scrollbar-width:none}
+.panel::-webkit-scrollbar{display:none}
+.mod{display:flex;flex-direction:column;gap:10px}
+.mod[hidden]{display:none}
+.card{background:var(--card);border-radius:var(--radius);padding:16px 18px 18px}
+.card h2{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;margin:2px 0 12px}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.45}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+button.chip{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:6px 11px;border-radius:999px;border:1px solid var(--line-strong);background:transparent;cursor:pointer}
+button.chip:hover{border-color:var(--ink)}
+button.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+button:focus-visible,input[type=range]:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* miniaturas de poses */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tile{position:relative;aspect-ratio:1;border:0;padding:0;border-radius:18px;overflow:hidden;background:var(--stage);cursor:pointer}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile span{position:absolute;left:6px;bottom:6px;background:var(--card);border-radius:999px;font-size:10.5px;font-weight:500;padding:3px 8px;max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile:hover img{transform:scale(1.04)}
+.tile img{transition:transform .25s}
+.tile[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+.tile[aria-pressed="true"] span{background:var(--ink);color:var(--on-ink)}
+
+/* sliders */
+.row{display:grid;grid-template-columns:84px minmax(0,1fr) 46px;align-items:center;gap:10px;padding:3px 0}
+.row label{font-size:13px}
+.row output{font-family:var(--mono);font-size:11.5px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+input[type=range]{--p:50%;-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(var(--ink),var(--ink)) 0/var(--p) 100% no-repeat,var(--track)}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:linear-gradient(var(--ink),var(--ink)) 0/var(--p) 100% no-repeat,var(--track)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;margin-top:-5.5px;background:var(--ink);border:0;box-shadow:0 0 0 3px var(--card)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:0;box-shadow:0 0 0 3px var(--card)}
+
+/* acordeones */
+details.part{border-top:1px solid var(--line)}
+details.part:last-of-type{border-bottom:1px solid var(--line)}
+details.part summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-weight:500;font-size:14px}
+details.part summary::-webkit-details-marker{display:none}
+details.part summary::after{content:"+";width:22px;height:22px;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;font-family:var(--mono);font-size:13px;color:var(--muted);line-height:1}
+details.part[open] summary::after{content:"–";background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+details.part .body{padding:0 0 12px}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 16%,transparent)}to{background:transparent}}
 details.part.flash{animation:flash .9s ease-out}
-.hint{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.45}
-.toast{position:absolute;top:16px;right:16px;background:var(--ink);color:var(--panel);font-size:12.5px;padding:7px 12px;border-radius:6px}
+
+/* tatuajes */
+.ink-tray{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.ink-tile{aspect-ratio:1;border:0;border-radius:14px;background:var(--stage);padding:5px;cursor:grab;touch-action:none}
+.ink-tile:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.ink-tile img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.ink-ghost{position:fixed;width:76px;height:76px;object-fit:contain;pointer-events:none;z-index:50;transform:translate(-50%,-50%);filter:drop-shadow(0 8px 14px rgba(0,0,0,.3))}
+.ink-tabs{margin-bottom:12px}
+.ink-input{width:100%;margin:10px 0 8px;padding:10px 16px;border-radius:999px;border:1px solid var(--line-strong);background:transparent;color:var(--ink);font:inherit;font-size:14px;letter-spacing:.06em;text-transform:uppercase;-webkit-user-select:text;user-select:text}
+.ink-input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.ink-input::placeholder{text-transform:none;letter-spacing:0;color:var(--muted)}
+.ink-word{width:100%;height:92px;border:0;border-radius:18px;background:var(--stage);padding:12px 14px;cursor:grab;touch-action:none;display:grid;place-items:center}
+.ink-word img{max-width:100%;max-height:68px;object-fit:contain;pointer-events:none}
+.ink-word span{font-size:12.5px;color:var(--muted)}
+.ink-word:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.ink-word[disabled]{cursor:default;box-shadow:none}
+.ink-sel{display:flex;align-items:center;gap:10px;margin:4px 0 8px}
+.ink-sel img{width:40px;height:40px;object-fit:contain;border-radius:10px;background:var(--stage);padding:3px}
+.ink-sel span{font-weight:500}
+[hidden]{display:none!important}
 
 @media (max-width:760px){
   body{overflow:auto}
-  .app{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}
-  .stage{height:62vh}
-  .panel{border-left:0;border-top:1px solid var(--line);overflow:visible}
+  .app{grid-template-columns:1fr;grid-template-rows:auto 62vh auto;height:auto;padding:10px}
+  .rail{flex-direction:row}
+  .logo{width:52px;height:52px}
+  .rail-pill{flex-direction:row;width:auto;flex:1;height:52px;padding:0 6px;justify-content:flex-start;overflow-x:auto}
+  .rail-sep{width:1px;height:22px;margin:0 4px}
+  .ibtn .tip{display:none}
+  .notch{left:auto;right:14px;top:14px;box-shadow:0 0 0 6px var(--frame)}
+  .notch .tip{display:none}
+  .hint{right:84px}
+  .panel{overflow:visible}
   .readout{display:none}
 }
+@media (prefers-reduced-motion: reduce){.tile img{transition:none}}
 </style>
 </head>
 <body>
 <div class="app">
-  <main class="stage">
-    <canvas id="view" aria-label="Maniquí de madera en 3D. Arrastra para rotar la vista, rueda para acercar."></canvas>
-    <div class="stage-head">
-      <h1 id="title">Mano de madera</h1>
-      <p id="hint">Arrastra para girar · rueda o pellizco para acercar · clic derecho para mover · clic en un dedo para editarlo</p>
+  <nav class="rail" aria-label="Herramientas">
+    <div class="logo" aria-hidden="true"><span class="logo-g"></span></div>
+    <div class="rail-pill">
+      <button class="ibtn" data-mod="hand" aria-pressed="true" aria-label="Mano">
+        <svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+        <span class="tip">Mano</span>
+      </button>
+      <button class="ibtn" data-mod="body" aria-pressed="false" aria-label="Cuerpo">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.5"/><path d="M12 7.5v7"/><path d="M6 10l6-1.5 6 1.5"/><path d="M9 21l3-6.5 3 6.5"/></svg>
+        <span class="tip">Cuerpo</span>
+      </button>
+      <span class="rail-sep" aria-hidden="true"></span>
+      <button class="ibtn" id="act-copy" aria-label="Copiar pose">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="3"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+        <span class="tip">Copiar pose</span>
+      </button>
+      <button class="ibtn" id="act-reset" aria-label="Restablecer">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        <span class="tip">Restablecer</span>
+      </button>
+      <span class="rail-spacer"></span>
+      <button class="ibtn" id="act-theme" aria-label="Cambiar tema">
+        <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+        <span class="tip">Tema claro u oscuro</span>
+      </button>
     </div>
-    <div class="views" id="views"></div>
-    <div class="readout" id="readout"></div>
-    <div class="toast" id="toast" hidden></div>
+  </nav>
+
+  <main class="stage">
+    <div class="stage-clip">
+      <canvas id="view" aria-label="Maniquí de madera en 3D. Arrastra para rotar la vista, rueda para acercar."></canvas>
+      <p class="hint" id="hint">Arrastra para girar · rueda o pellizco para acercar · clic derecho para mover · clic en un dedo para editarlo</p>
+      <div class="views" id="views">
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="toast" id="toast" hidden></div>
+    </div>
+    <button class="notch ibtn" id="act-jpg" aria-label="Descargar JPG">
+      <svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/><path d="M5 20h14"/></svg>
+      <span class="tip">Descargar JPG</span>
+    </button>
   </main>
 
-  <aside class="panel" id="panel">
-    <nav class="chips mode" aria-label="Herramienta">
-      <button class="chip" data-mod="hand" aria-pressed="true">Mano</button>
-      <button class="chip" data-mod="body" aria-pressed="false">Cuerpo</button>
-    </nav>
+  <aside class="side">
+    <div class="title-pill">
+      <span class="dot" id="title-icon" aria-hidden="true"></span>
+      <h1 id="title">Mano de madera</h1>
+    </div>
 
+    <div class="panel" id="panel">
     <div class="mod" id="mod-hand">
-    <section class="sec">
+    <section class="card">
       <h2>Poses</h2>
-      <div class="chips" id="presets"></div>
+      <div class="tiles" id="presets"></div>
     </section>
 
-    <section class="sec">
+    <section class="card">
       <h2>Mano completa</h2>
       <div id="global"></div>
-      <div class="chips" style="margin-top:8px">
+      <div class="chips" style="margin-top:10px">
         <button class="chip" id="sideR" aria-pressed="true">Derecha</button>
         <button class="chip" id="sideL" aria-pressed="false">Izquierda</button>
-        <button class="chip" id="copy">Copiar pose</button>
-        <button class="chip" id="reset">Restablecer</button>
       </div>
     </section>
 
-    <section class="sec">
+    <section class="card">
       <h2>Dedos</h2>
       <div id="fingers"></div>
-      <p class="hint">Base, medio y punta corresponden a los nudillos MCP, PIP y DIP. Los rangos están limitados para que ninguna falange se doble al revés.</p>
+      <p class="note">Base, medio y punta corresponden a los nudillos MCP, PIP y DIP. Los rangos están limitados para que ninguna falange se doble al revés.</p>
     </section>
 
-    <section class="sec">
+    <section class="card">
       <h2>Muñeca</h2>
       <div id="wrist"></div>
     </section>
     </div>
 
     <div class="mod" id="mod-body" hidden>
-    <section class="sec">
+    <section class="card">
       <h2>Poses</h2>
-      <div class="chips" id="b-presets"></div>
+      <div class="tiles" id="b-presets"></div>
     </section>
 
-    <section class="sec">
+    <section class="card">
       <h2>Cuerpo completo</h2>
       <div class="chips" role="group" aria-label="Canon">
         <button class="chip" id="b-canon8" aria-pressed="true">8 cabezas</button>
         <button class="chip" id="b-canon75" aria-pressed="false">7.5 cabezas</button>
         <button class="chip" id="b-stand" aria-pressed="true">Soporte</button>
       </div>
-      <div class="chips" style="margin-top:8px">
-        <button class="chip" id="b-copy">Copiar pose</button>
-        <button class="chip" id="b-reset">Restablecer</button>
-      </div>
     </section>
 
-    <section class="sec">
+    <section class="card">
       <h2>Partes</h2>
       <div id="b-parts"></div>
-      <p class="hint">Izquierda y derecha son las del maniquí: visto de frente, su brazo izquierdo queda a tu derecha.</p>
+      <p class="note">Izquierda y derecha son las del maniquí: visto de frente, su brazo izquierdo queda a tu derecha.</p>
     </section>
     </div>
 
-    <section class="sec">
+    <section class="card">
+      <h2>Tatuajes</h2>
+      <div class="chips ink-tabs" role="group" aria-label="Tipo de tatuaje">
+        <button class="chip" id="ink-tab-designs" aria-pressed="true">Diseños</button>
+        <button class="chip" id="ink-tab-letters" aria-pressed="false">Letras</button>
+      </div>
+      <div class="ink-tray" id="ink-tray"></div>
+      <div id="ink-letters" hidden>
+        <div class="chips" role="group" aria-label="Estilo de letra">
+          <button class="chip" id="ink-style-line" aria-pressed="true">Línea</button>
+          <button class="chip" id="ink-style-color" aria-pressed="false">Color</button>
+        </div>
+        <input class="ink-input" id="ink-text" type="text" maxlength="14" placeholder="Escribe una palabra" autocomplete="off" spellcheck="false" aria-label="Texto del tatuaje">
+        <button class="ink-word" id="ink-word" aria-label="Arrastra la palabra a la madera"><img alt="" draggable="false"><span>Escribe para ver la palabra</span></button>
+        <p class="note" id="ink-letters-note">Línea: A a Z y 0 a 9. Color: A a Z.</p>
+      </div>
+      <p class="note" id="ink-empty">Arrastra un diseño sobre la madera. Queda en esa pieza y la sigue al posar.</p>
+      <div id="ink-edit" hidden>
+        <div class="ink-sel"><img id="ink-sel-img" alt=""><span id="ink-sel-name"></span></div>
+        <div id="ink-sliders"></div>
+        <div class="chips" style="margin-top:10px">
+          <button class="chip" id="ink-remove">Quitar</button>
+          <button class="chip" id="ink-done">Listo</button>
+        </div>
+        <p class="note">Arrastra el tatuaje sobre el modelo para moverlo. Supr lo quita.</p>
+      </div>
+      <div class="chips" style="margin-top:10px"><button class="chip" id="ink-clear" hidden>Quitar todos</button></div>
+    </section>
+
+    <section class="card">
       <h2>Cámara y luz</h2>
       <div id="camera"></div>
-      <p class="hint">El lente mantiene el encuadre: a 24 mm la cámara se acerca y exagera el escorzo; a 135 mm se aleja y aplana la forma.</p>
+      <p class="note">El lente mantiene el encuadre: a 24 mm la cámara se acerca y exagera el escorzo; a 135 mm se aleja y aplana la forma.</p>
     </section>
+    </div>
   </aside>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/geometries/DecalGeometry.js"></script>
 <script>
 (function(){
 const D = Math.PI/180;
@@ -327,7 +474,8 @@ function buildHand(parent){
   rig.thumb={root,roll,joints:[j1,j2]};
 
   /* cada malla de un dedo sabe a qué dedo pertenece, para poder elegirlo con clic */
-  for(const name of ['thumb',...FINGER_NAMES])rig[name].root.traverse(o=>{if(o.isMesh)o.userData.part=name;});
+  for(const name of ['thumb',...FINGER_NAMES])rig[name].root.traverse(o=>{if(o.isMesh){o.userData.part=name;o.userData.finger=true;}});
+  wrist.traverse(o=>{if(o.isMesh)o.userData.inHand=true;});
   return {wrist,rig};
 }
 /* traduce dedos (p) y muñeca (w), en grados, a rotaciones de la mano h */
@@ -412,14 +560,15 @@ function tweenCamera(to){
 
 /* ---------- UI compartida ---------- */
 const ui={};       // id -> {sync}
-function slider(container,id,label,min,max,get,set,unit){
+function slider(container,id,label,min,max,get,set,unit,after){
   const row=document.createElement('div');row.className='row';
   row.innerHTML=`<label for="${id}">${label}</label><input type="range" id="${id}" min="${min}" max="${max}" step="1"><output for="${id}"></output>`;
   container.appendChild(row);
   const input=row.querySelector('input'),out=row.querySelector('output');
   const u=unit||'°';
-  const sync=()=>{const v=get();input.value=v;out.textContent=Math.round(v)+u;};
-  input.addEventListener('input',()=>{set(+input.value);out.textContent=input.value+u;onChange();});
+  const fillTo=v=>input.style.setProperty('--p',(v-min)/(max-min)*100+'%');   // tramo relleno de la pista
+  const sync=()=>{const v=get();input.value=v;out.textContent=Math.round(v)+u;fillTo(v);};
+  input.addEventListener('input',()=>{set(+input.value);out.textContent=input.value+u;fillTo(+input.value);(after||onChange)();});
   ui[id]={sync};sync();
 }
 function syncAll(){for(const k in ui)ui[k].sync();}
@@ -448,12 +597,16 @@ function tweenPose(m,to){
     if(k>=1){poseTween=null;syncAll();}
   };
 }
-/* chips de poses de un módulo */
-function presetChips(m,container){
-  const btns={};
+/* poses de un módulo como miniaturas; la imagen la pinta makeThumbs() */
+function presetTiles(m,container){
+  const btns={};m.tiles=btns;
   m.goPreset=name=>{tweenPose(m,clone(m.presets[name]));if(m.onPreset)m.onPreset();pressOnly(Object.values(btns),btns[name]);};
   m.clearMark=()=>Object.values(btns).forEach(b=>b.setAttribute('aria-pressed','false'));
-  for(const name of Object.keys(m.presets))btns[name]=chip(container,name,()=>m.goPreset(name),name===m.defaultPreset);
+  for(const name of Object.keys(m.presets)){
+    const b=document.createElement('button');b.className='tile';b.setAttribute('aria-pressed',name===m.defaultPreset?'true':'false');
+    b.innerHTML=`<img alt=""><span>${name}</span>`;b.addEventListener('click',()=>m.goPreset(name));
+    container.appendChild(b);btns[name]=b;
+  }
 }
 /* acordeón de una parte; clic en la parte en 3D lo abre */
 function partSection(m,container,key,label,open){
@@ -472,9 +625,31 @@ function openPart(key){
 
 const toast=document.getElementById('toast');let toastT;
 function say(msg){toast.textContent=msg;toast.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>toast.hidden=true,1800);}
+/* tatuajes en el JSON: pieza por índice dentro del módulo y punto/normal en su espacio local */
+function exportTattoos(m){
+  const pieces=[];m.root.traverse(o=>{if(o.isMesh&&!o.userData.tattoo)pieces.push(o);});
+  const r=v=>v.toArray().map(x=>+x.toFixed(4));
+  return m.tattoos.map(t=>({diseno:t.file,pieza:pieces.indexOf(t.target),punto:r(t.lp),normal:r(t.ln),tamano_cm:t.cm,rotacion:t.rot,opacidad:t.opacity}));
+}
 function copyPose(){
   const txt=JSON.stringify(M.exportPose(),null,1);
   try{navigator.clipboard.writeText(txt).then(()=>say('Pose copiada como JSON'),()=>say('No se pudo copiar en este navegador'));}catch(e){say('No se pudo copiar en este navegador');}
+}
+/* descargar JPG: re-renderiza la vista actual a ~4K de ancho, sin el resaltado del hover */
+function downloadJPG(){
+  setHover(null);capturing=true;updateSelHelper();
+  const pr=renderer.getPixelRatio(),size=renderer.getSize(new THREE.Vector2());
+  renderer.setPixelRatio(Math.max(pr,Math.min(4,3840/size.x)));renderer.setSize(size.x,size.y,false);
+  renderer.render(scene,camera);
+  const d=new Date(),z=n=>String(n).padStart(2,'0');
+  const name=`${M.id==='body'?'cuerpo':'mano'}-${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}.jpg`;
+  canvas.toBlob(blob=>{
+    renderer.setPixelRatio(pr);renderer.setSize(size.x,size.y,false);capturing=false;
+    if(!blob){say('No se pudo crear la imagen');return;}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    say('Imagen descargada');
+  },'image/jpeg',0.92);
 }
 // restablecer: pose, lente, luz y cámara vuelven al estado inicial del módulo
 function resetModule(){
@@ -495,17 +670,17 @@ function resetModule(){
   const hand=buildHand(root);
 
   const m=MODULES.hand={
-    id:'hand',title:'Mano de madera',hint:'clic en un dedo para editarlo',
+    id:'hand',title:'Mano de madera',tattoos:[],cmPerUnit:4.8,hint:'clic en un dedo para editarlo',
     root,panel:document.getElementById('mod-hand'),details:{},
     presets:HAND_PRESETS,defaultPreset:'Relajada',pose:clone(HAND_PRESETS['Relajada']),
-    target:new THREE.Vector3(0,0.35,0),dir:new THREE.Vector3(5.5,2.85,12.5).normalize(),dist:15,shadow:[5,0.5],
+    target:new THREE.Vector3(0,0.2,0),dir:new THREE.Vector3(5.5,2.85,12.5).normalize(),dist:17,thumbZoom:0.85,shadow:[5,0.5],
     views:{'Frente':[0,0.9,1],'Tres cuartos':[0.75,0.55,0.75],'Perfil':[1,0.15,0],'Dorso':[0,0.5,-1],'Arriba':[0.05,1,0.2],'Abajo':[0.2,-0.55,0.8]},
     apply(){applyHand(hand,m.pose,m.pose.wrist);},
     onPreset(){fistAmt=0;spreadAmt=0;},
-    exportPose(){return {herramienta:'mano',mano:root.scale.x<0?'izquierda':'derecha',lente_mm:cam.lens,pose:m.pose};},
+    exportPose(){return {herramienta:'mano',mano:root.scale.x<0?'izquierda':'derecha',lente_mm:cam.lens,pose:m.pose,tatuajes:exportTattoos(m)};},
   };
   const pose=m.pose;
-  presetChips(m,document.getElementById('presets'));
+  presetTiles(m,document.getElementById('presets'));
 
   // global
   const gl=document.getElementById('global');
@@ -541,8 +716,6 @@ function resetModule(){
   const sideR=document.getElementById('sideR'),sideL=document.getElementById('sideL');
   function setSide(right){root.scale.x=right?1:-1;sideR.setAttribute('aria-pressed',right);sideL.setAttribute('aria-pressed',!right);}
   sideR.onclick=()=>setSide(true);sideL.onclick=()=>setSide(false);
-  document.getElementById('copy').onclick=copyPose;
-  document.getElementById('reset').onclick=resetModule;
   m.apply();
 })();
 
@@ -578,6 +751,7 @@ function resetModule(){
   const figure=new THREE.Group();figure.position.y=FLOOR+STAND_H;root.add(figure);
   const rodGeo=new THREE.CylinderGeometry(0.06,0.06,1,20);rodGeo.translate(0,0.5,0);
   const rod=mesh(rodGeo,woodMat(pinTint));stand.add(rod);rod.position.y=FLOOR+STAND_H;
+  stand.traverse(o=>{o.userData.noTattoo=true;});   // el soporte no se tatúa
 
   /* pelvis */
   const pelvis=new THREE.Group();pelvis.rotation.order='YXZ';pelvis.position.y=PELVIS_Y;figure.add(pelvis);
@@ -680,10 +854,10 @@ function resetModule(){
   };
 
   const m=MODULES.body={
-    id:'body',title:'Maniquí de madera',hint:'clic en una parte para editarla',
+    id:'body',title:'Maniquí de madera',tattoos:[],cmPerUnit:22,hint:'clic en una parte para editarla',
     root,panel:document.getElementById('mod-body'),details:{},
     presets:BODY_PRESETS,defaultPreset:'De pie',pose:clone(BODY_PRESETS['De pie']),
-    target:new THREE.Vector3(0,FLOOR+STAND_H+4.3,0),dir:new THREE.Vector3(5.5,1.8,12.5).normalize(),dist:22,shadow:[7.5,1],
+    target:new THREE.Vector3(0,FLOOR+STAND_H+4.3,0),dir:new THREE.Vector3(5.5,1.8,12.5).normalize(),dist:22,thumbZoom:0.8,shadow:[7.5,1],
     views:{'Frente':[0,0.2,1],'Tres cuartos':[0.75,0.25,0.75],'Perfil':[1,0.1,0],'Dorso':[0,0.2,-1],'Arriba':[0.05,1,0.2],'Abajo':[0.2,-0.4,0.8]},
     canon:8,fist:{L:0,R:0},
     apply(){
@@ -708,10 +882,10 @@ function resetModule(){
       }
     },
     onPreset(){m.fist.L=m.fist.R=0;},
-    exportPose(){return {herramienta:'cuerpo',canon_cabezas:m.canon,lente_mm:cam.lens,pose:m.pose};},
+    exportPose(){return {herramienta:'cuerpo',canon_cabezas:m.canon,lente_mm:cam.lens,pose:m.pose,tatuajes:exportTattoos(m)};},
   };
   const pose=m.pose;
-  presetChips(m,document.getElementById('b-presets'));
+  presetTiles(m,document.getElementById('b-presets'));
 
   // canon y soporte
   const c8=document.getElementById('b-canon8'),c75=document.getElementById('b-canon75');
@@ -720,8 +894,6 @@ function resetModule(){
   const st=document.getElementById('b-stand');
   st.onclick=()=>{stand.visible=!stand.visible;st.setAttribute('aria-pressed',stand.visible);};
   m.onReset=()=>{setCanon(8);stand.visible=true;st.setAttribute('aria-pressed','true');};
-  document.getElementById('b-copy').onclick=copyPose;
-  document.getElementById('b-reset').onclick=resetModule;
 
   // partes
   const pc=document.getElementById('b-parts');
@@ -758,23 +930,25 @@ function resetModule(){
 })();
 
 /* ---------- Cambio de módulo ---------- */
-const titleEl=document.getElementById('title'),hintEl=document.getElementById('hint');
+const titleEl=document.getElementById('title'),hintEl=document.getElementById('hint'),titleIcon=document.getElementById('title-icon');
 const HINT='Arrastra para girar · rueda o pellizco para acercar · clic derecho para mover · ';
 const modeBtns=[...document.querySelectorAll('[data-mod]')];
 function setModule(id){
   if(M===MODULES[id])return;
   setHover(null);poseTween=null;camTween=null;
+  selTattoo=null;armed=null;
   if(M)M.cam={pos:camera.position.clone(),target:controls.target.clone()};
   for(const k in MODULES){MODULES[k].root.visible=false;MODULES[k].panel.hidden=true;}
   M=MODULES[id];
   M.root.visible=true;M.panel.hidden=false;
-  titleEl.textContent=M.title;document.title=M.title;hintEl.textContent=HINT+M.hint;
+  titleEl.textContent=M.title;titleIcon.innerHTML=document.querySelector(`[data-mod=${id}] svg`).outerHTML;document.title=M.title;hintEl.textContent=HINT+M.hint;
   pressOnly(modeBtns,modeBtns.find(b=>b.dataset.mod===id));
   setShadowBox(...M.shadow);
   if(M.cam){controls.target.copy(M.cam.target);camera.position.copy(M.cam.pos);}
   else{controls.target.copy(M.target);camera.position.copy(M.target).addScaledVector(M.dir,M.dist);}
   applyLens();
   history.replaceState(null,'',id==='body'?'#cuerpo':location.pathname+location.search);
+  refreshInkCard();
 }
 modeBtns.forEach(b=>b.addEventListener('click',()=>setModule(b.dataset.mod)));
 
@@ -785,7 +959,8 @@ function partAt(e){
   ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
   raycaster.setFromCamera(ndc,camera);
   const hit=raycaster.intersectObject(M.root,true)[0];
-  const part=hit&&hit.object.userData.part;
+  const obj=hit&&(hit.object.userData.tattoo?hit.object.userData.tattoo.target:hit.object);
+  const part=obj&&obj.userData.part;
   return part&&M.details[part]?part:null;
 }
 let hovered=null;const HOVER_TINT=new THREE.Color(0xd2a878);
@@ -806,18 +981,320 @@ canvas.addEventListener('pointerup',e=>{
   if(!down)return;
   const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;
   if(moved>5)return; // fue un arrastre de cámara, no un clic
+  if(armed){const hit=woodHit(e);if(hit){const t=newTattoo(armed,hit);M.tattoos.push(t);selectTattoo(t);}armed=null;return;}
+  if(selTattoo)selectTattoo(null);
   const n=partAt(e);if(n)openPart(n);
 });
 canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&!e.buttons)setHover(partAt(e));});
 canvas.addEventListener('pointerleave',()=>setHover(null));
 
+/* ---------- Tatuajes ---------- */
+/* Cada tatuaje es un decal proyectado sobre una pieza de madera y colgado de ella, así sigue la pose.
+   La tinta se mezcla en multiplicar: el blanco desaparece (se ve la madera) y el color oscurece la veta sin taparla. */
+const TATTOOS=[['baldosa','Baldosa'],['calavera-flores','Calavera'],['corazón-fuego','Corazón con ojo'],['corazón','Corazón'],['daga-corazon','Daga'],
+  ['flor01','Tulipán'],['flor02','Flor'],['flores','Mandala'],['jarron','Jarrón'],['luna','Luna'],['manos','Manos'],['mariposa','Mariposa'],
+  ['pajarito','Golondrina'],['rosa01','Rosa'],['serpiente','Serpiente']];
+const TATTOO_NAME=Object.fromEntries(TATTOOS);
+const designSrc={};       // palabras: clave -> dataURL (miniatura y selección)
+const designLetters={};   // palabras: clave -> cantidad de letras (para el tamaño inicial)
+const tattooURL=f=>designSrc[f]||'assets/'+encodeURIComponent(f)+'.png';
+const texLoader=new THREE.TextureLoader(),tattooTex={},tattooAspect={};
+let pendingPlace=new Set();   // tatuajes a recalcular en el próximo frame
+for(const [f] of TATTOOS){
+  const t=texLoader.load(tattooURL(f),tx=>{
+    tattooAspect[f]=tx.image.height/tx.image.width;
+    for(const k in MODULES)MODULES[k].tattoos.forEach(tt=>{if(tt.file===f)pendingPlace.add(tt);});
+  });
+  t.encoding=THREE.sRGBEncoding;t.anisotropy=8;tattooTex[f]=t;
+}
+function inkMaterial(file){
+  return new THREE.MeshBasicMaterial({map:tattooTex[file],transparent:true,premultipliedAlpha:true,toneMapped:false,side:THREE.DoubleSide,
+    depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,
+    blending:THREE.CustomBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.DstColorFactor,blendDst:THREE.OneMinusSrcAlphaFactor,
+    blendSrcAlpha:THREE.ZeroFactor,blendDstAlpha:THREE.OneFactor});
+}
+const projector=new THREE.Object3D(),normalMat=new THREE.Matrix3();
+/* punto y normal del tatuaje en el mundo, a partir de los guardados en el espacio local de su pieza */
+function tattooFrame(t){
+  const tg=t.target;tg.updateWorldMatrix(true,false);
+  const p=tg.localToWorld(t.lp.clone());
+  const n=t.ln.clone().applyMatrix3(normalMat.getNormalMatrix(tg.matrixWorld)).normalize();
+  projector.position.copy(p);projector.lookAt(p.clone().add(n));projector.rotateZ(R(t.rot));
+  const w=t.cm/t.module.cmPerUnit;
+  return {p,n,w,h:w*(tattooAspect[t.file]||1)};
+}
+/* quita los triángulos que miran de costado a la proyección: ahí el decal se estira en manchas
+   (bordes de dedos y brazos) y es lo que imprimiría el diseño en la cara de atrás de una pieza delgada */
+function keepFacing(geo,n,minDot){
+  const P=geo.attributes.position,N=geo.attributes.normal,U=geo.attributes.uv;
+  const pos=[],nor=[],uv=[],a=new THREE.Vector3();
+  for(let i=0;i<P.count;i+=3){
+    a.set(0,0,0);for(let k=0;k<3;k++)a.x+=N.getX(i+k),a.y+=N.getY(i+k),a.z+=N.getZ(i+k);
+    if(a.normalize().dot(n)<minDot)continue;
+    for(let k=0;k<3;k++){pos.push(P.getX(i+k),P.getY(i+k),P.getZ(i+k));nor.push(N.getX(i+k),N.getY(i+k),N.getZ(i+k));uv.push(U.getX(i+k),U.getY(i+k));}
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  geo.dispose();return g;
+}
+/* el tatuaje se imprime sobre todas las piezas hermanas de la que está bajo el puntero (falange + bisagra,
+   pecho + rótula): se mueven juntas, así que el diseño no se corta en la bisagra. Cuelga del grupo que las contiene */
+function mergeGeos(geos){
+  const out=new THREE.BufferGeometry();
+  for(const [name,size] of [['position',3],['normal',3],['uv',2]]){
+    const arr=[];geos.forEach(g=>arr.push(...g.attributes[name].array));
+    out.setAttribute(name,new THREE.Float32BufferAttribute(arr,size));
+  }
+  geos.forEach(g=>g.dispose());return out;
+}
+function placeTattoo(t){
+  const {p,n,w,h}=tattooFrame(t);
+  const host=t.target.parent;host.updateWorldMatrix(true,true);
+  const pieces=host.children.filter(o=>o.isMesh&&!o.userData.tattoo&&!o.userData.noTattoo);
+  const size=new THREE.Vector3(w,h,Math.max(w,h)*0.5);
+  const geo=mergeGeos(pieces.map(m=>keepFacing(new THREE.DecalGeometry(m,p,projector.rotation,size),n,0.3)));
+  geo.applyMatrix4(host.matrixWorld.clone().invert());
+  if(!t.mesh){t.mesh=new THREE.Mesh(geo,inkMaterial(t.file));t.mesh.userData.tattoo=t;t.mesh.renderOrder=2;}
+  else{t.mesh.geometry.dispose();t.mesh.geometry=geo;}
+  if(t.mesh.parent!==host)host.add(t.mesh);
+  t.mesh.material.opacity=t.opacity/100;
+}
+function aimTattoo(t,hit){
+  t.target=hit.object;t.lp=hit.object.worldToLocal(hit.point.clone());t.ln=hit.face.normal.clone();
+  pendingPlace.add(t);
+}
+function removeTattoo(t){
+  if(t.mesh){t.mesh.removeFromParent();t.mesh.geometry.dispose();t.mesh.material.dispose();}
+  const list=t.module.tattoos,i=list.indexOf(t);if(i>=0)list.splice(i,1);
+  if(selTattoo===t)selectTattoo(null);else refreshInkCard();
+}
+/* qué hay bajo el puntero: el primer impacto decide si es un tatuaje o una pieza tatuable */
+function hitUnder(e){
+  const r=canvas.getBoundingClientRect();
+  ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+  raycaster.setFromCamera(ndc,camera);
+  return raycaster.intersectObject(M.root,true).filter(h=>h.object.isMesh&&!h.object.userData.noTattoo&&h.object.visible);
+}
+const woodHit=e=>hitUnder(e).find(h=>!h.object.userData.tattoo&&h.face)||null;
+/* el decal está pegado a la superficie: si un tatuaje queda casi a la misma profundidad que el primer impacto, gana el tatuaje */
+function tattooUnder(e){
+  const hits=hitUnder(e);if(!hits.length)return null;
+  const eps=camera.position.distanceTo(controls.target)*0.004;
+  const h=hits.find(h=>h.object.userData.tattoo&&h.distance<=hits[0].distance+eps);
+  if(h)return h.object.userData.tattoo;
+  // respaldo: el rayo puede colarse por una arista del decal (p. ej. sobre la costura del torno); vale tocar la madera cerca de su centro
+  const wood=hits[0];
+  for(const t of M.tattoos){
+    if(t.target.parent!==wood.object.parent||!t.mesh)continue;
+    const f=tattooFrame(t);
+    if(wood.point.distanceTo(f.p)<Math.min(f.w,f.h)*0.4)return t;
+  }
+  return null;
+}
+
+/* selección y tarjeta */
+let selTattoo=null,capturing=false;
+const inkEmpty=document.getElementById('ink-empty'),inkEdit=document.getElementById('ink-edit'),inkClear=document.getElementById('ink-clear');
+const selHelper=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].map(([x,y])=>new THREE.Vector3(x,y,0))),
+  new THREE.LineBasicMaterial({color:0xff5a1f,depthTest:false,transparent:true}));
+selHelper.renderOrder=10;selHelper.visible=false;scene.add(selHelper);
+function updateSelHelper(){
+  selHelper.visible=!!selTattoo&&!capturing&&selTattoo.module===M;
+  if(!selHelper.visible)return;
+  const {p,n,w,h}=tattooFrame(selTattoo);
+  selHelper.position.copy(p).addScaledVector(n,0.002);selHelper.quaternion.copy(projector.quaternion);selHelper.scale.set(w*1.08,h*1.08,1);
+}
+function refreshInkCard(){
+  inkEdit.hidden=!selTattoo;inkEmpty.hidden=!!selTattoo;
+  inkClear.hidden=!M||!M.tattoos.length;
+  if(selTattoo){
+    document.getElementById('ink-sel-img').src=tattooURL(selTattoo.file);
+    document.getElementById('ink-sel-name').textContent=TATTOO_NAME[selTattoo.file];
+    ['ink-size','ink-rot','ink-op'].forEach(k=>ui[k].sync());
+  }
+}
+function selectTattoo(t){selTattoo=t;refreshInkCard();}
+const noop=()=>{};
+const ie=document.getElementById('ink-sliders');
+slider(ie,'ink-size','Tamaño',1,30,()=>selTattoo?selTattoo.cm:6,v=>{selTattoo.cm=v;pendingPlace.add(selTattoo);},' cm',noop);
+slider(ie,'ink-rot','Rotar',-180,180,()=>selTattoo?selTattoo.rot:0,v=>{selTattoo.rot=v;pendingPlace.add(selTattoo);},'°',noop);
+slider(ie,'ink-op','Opacidad',20,100,()=>selTattoo?selTattoo.opacity:92,v=>{selTattoo.opacity=v;selTattoo.mesh.material.opacity=v/100;},'%',noop);
+document.getElementById('ink-remove').onclick=()=>selTattoo&&removeTattoo(selTattoo);
+document.getElementById('ink-done').onclick=()=>selectTattoo(null);
+inkClear.onclick=()=>{[...M.tattoos].forEach(removeTattoo);selectTattoo(null);};
+document.addEventListener('keydown',e=>{
+  if(!selTattoo||/INPUT|TEXTAREA/.test(e.target.tagName))return;
+  if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeTattoo(selTattoo);}
+  else if(e.key==='Escape')selectTattoo(null);
+});
+
+/* bandeja: arrastrar un diseño (mouse o dedo) con vista previa en la madera; un toque sin arrastrar lo deja listo para tocar el modelo */
+const tray=document.getElementById('ink-tray');
+let armed=null;
+/* tamaño inicial según la pieza (dedo, mano o cuerpo); una palabra arranca más ancha y una letra suelta en un dedo, más chica */
+function defaultCm(file,hit){
+  const u=hit.object.userData,n=designLetters[file]||1;
+  const base=u.finger?(designLetters[file]?1.2:2):u.inHand?4:10;
+  return Math.min(30,Math.round(base*Math.min(3,1+(n-1)*.3)*10)/10);
+}
+function newTattoo(file,hit){
+  const t={module:M,file,cm:defaultCm(file,hit),rot:0,opacity:92,mesh:null};
+  aimTattoo(t,hit);return t;
+}
+/* arrastre desde la bandeja (diseños o palabra). pick() devuelve {key,label} del diseño en ese momento */
+function trayDrag(b,pick){
+  b.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    const d=pick();if(!d)return;
+    e.preventDefault();b.setPointerCapture(e.pointerId);
+    const start={x:e.clientX,y:e.clientY};let dragging=false,preview=null;
+    const ghost=document.createElement('img');ghost.className='ink-ghost';ghost.src=tattooURL(d.key);ghost.alt='';
+    const move=ev=>{
+      if(!dragging&&Math.hypot(ev.clientX-start.x,ev.clientY-start.y)>5){dragging=true;document.body.appendChild(ghost);}
+      if(!dragging)return;
+      ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px';
+      const hit=woodHit(ev);
+      if(hit){if(!preview)preview=newTattoo(d.key,hit);else{preview.cm=defaultCm(d.key,hit);aimTattoo(preview,hit);}if(preview.mesh)preview.mesh.visible=true;}   // hasta soltarlo, el tamaño sigue a la pieza
+      else if(preview&&preview.mesh)preview.mesh.visible=false;
+      ghost.hidden=!!hit;
+    };
+    const up=()=>{
+      b.removeEventListener('pointermove',move);b.removeEventListener('pointerup',up);b.removeEventListener('pointercancel',up);
+      ghost.remove();
+      if(!dragging){armed=d.key;say(`Toca la madera para poner ${d.label}`);return;}
+      if(preview&&(!preview.mesh||preview.mesh.visible)){M.tattoos.push(preview);pendingPlace.add(preview);selectTattoo(preview);}
+      else if(preview){preview.module.tattoos.push(preview);removeTattoo(preview);}
+    };
+    b.addEventListener('pointermove',move);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
+  });
+}
+for(const [file,label] of TATTOOS){
+  const b=document.createElement('button');b.className='ink-tile';b.title=label;b.setAttribute('aria-label','Tatuaje '+label);
+  b.innerHTML=`<img src="${tattooURL(file)}" alt="" draggable="false">`;tray.appendChild(b);
+  trayDrag(b,()=>({key:file,label}));
+}
+
+/* letras: la palabra se arma con las imágenes de cada letra en un lienzo y se usa como un diseño más */
+const LETTER_SETS={
+  line:{dir:'line alphabet',chars:'abcdefghijklmnopqrstuvwxyz0123456789',gap:.07,label:'Línea'},
+  color:{dir:'alphabet',chars:'abcdefghijklmnopqrstuvwxyz',gap:.01,label:'Color'},
+};
+const letterImgs={};   // 'line:a' -> {img, x0, x1} (columnas con tinta, para juntar las letras)
+function loadLetter(style,ch){
+  const k=style+':'+ch;
+  if(!letterImgs[k])letterImgs[k]=new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);
+      const a=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,x1=0;
+      for(let i=3;i<a.length;i+=4)if(a[i]>8){const px=((i-3)/4)%c.width;if(px<x0)x0=px;if(px>x1)x1=px;}
+      res({img,x0:Math.min(x0,x1),x1:Math.max(x0,x1)+1});
+    };
+    img.onerror=()=>res(null);
+    img.src='assets/'+encodeURIComponent(LETTER_SETS[style].dir)+'/'+ch+'.png';
+  });
+  return letterImgs[k];
+}
+const cleanText=(txt,style)=>txt.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().split('')
+  .filter(ch=>ch===' '||LETTER_SETS[style].chars.includes(ch)).join('').replace(/\s+/g,' ').trim();
+async function buildWord(style,word){
+  const key=`texto:${style}:${word}`;
+  if(tattooTex[key])return key;
+  const parts=await Promise.all(word.split('').map(ch=>ch===' '?null:loadLetter(style,ch)));
+  const H=Math.max(...parts.filter(Boolean).map(p=>p.img.height)),gap=Math.round(H*LETTER_SETS[style].gap),space=Math.round(H*.32);
+  let W=0;parts.forEach((p,i)=>{W+=p?p.x1-p.x0:space;if(i<parts.length-1)W+=gap;});
+  const c=document.createElement('canvas');c.width=Math.max(1,W);c.height=H;const x=c.getContext('2d');
+  let cx=0;parts.forEach(p=>{if(p){x.drawImage(p.img,p.x0,0,p.x1-p.x0,p.img.height,cx,(H-p.img.height)/2,p.x1-p.x0,p.img.height);cx+=p.x1-p.x0+gap;}else cx+=space+gap;});
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;
+  tattooTex[key]=t;tattooAspect[key]=H/c.width;designSrc[key]=c.toDataURL('image/png');
+  designLetters[key]=word.replace(/ /g,'').length;
+  TATTOO_NAME[key]=`${word.toUpperCase()} · ${LETTER_SETS[style].label}`;
+  return key;
+}
+let letterStyle='line',wordKey=null;
+const inkText=document.getElementById('ink-text'),inkWord=document.getElementById('ink-word');
+const wordImg=inkWord.querySelector('img'),wordHint=inkWord.querySelector('span');
+async function refreshWord(){
+  const word=cleanText(inkText.value,letterStyle);
+  if(!word){wordKey=null;wordImg.hidden=true;wordHint.hidden=false;inkWord.disabled=true;return;}
+  const key=await buildWord(letterStyle,word);
+  if(cleanText(inkText.value,letterStyle)!==word||!key.startsWith(`texto:${letterStyle}:`))return;   // ya cambió mientras cargaba
+  wordKey=key;wordImg.src=designSrc[key];wordImg.hidden=false;wordHint.hidden=true;inkWord.disabled=false;
+}
+inkText.addEventListener('input',refreshWord);
+const styleBtns={line:document.getElementById('ink-style-line'),color:document.getElementById('ink-style-color')};
+for(const st in styleBtns)styleBtns[st].onclick=()=>{letterStyle=st;pressOnly(Object.values(styleBtns),styleBtns[st]);refreshWord();};
+trayDrag(inkWord,()=>wordKey&&{key:wordKey,label:TATTOO_NAME[wordKey]});
+const tabD=document.getElementById('ink-tab-designs'),tabL=document.getElementById('ink-tab-letters'),lettersBox=document.getElementById('ink-letters');
+tabD.onclick=()=>{pressOnly([tabD,tabL],tabD);tray.hidden=false;lettersBox.hidden=true;};
+tabL.onclick=()=>{pressOnly([tabD,tabL],tabL);tray.hidden=true;lettersBox.hidden=false;refreshWord();};
+refreshWord();
+
+/* mover un tatuaje: arrastrarlo sobre la madera. Corre en captura para ganarle a OrbitControls */
+let movingTattoo=null;
+canvas.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+  const t=tattooUnder(e);if(!t)return;
+  e.stopImmediatePropagation();
+  selectTattoo(t);movingTattoo=t;canvas.setPointerCapture(e.pointerId);
+},{capture:true});
+canvas.addEventListener('pointermove',e=>{
+  if(!movingTattoo)return;
+  const hit=woodHit(e);if(hit)aimTattoo(movingTattoo,hit);
+});
+canvas.addEventListener('pointerup',e=>{if(movingTattoo){movingTattoo=null;e.stopImmediatePropagation();}},{capture:true});
+
+
 /* ---------- Vistas y cámara ---------- */
 const vc=document.getElementById('views');
-for(const name of VIEW_NAMES)chip(vc,name,()=>setView(name));
+for(const name of VIEW_NAMES){const b=document.createElement('button');b.textContent=name;b.addEventListener('click',()=>setView(name));vc.appendChild(b);}
+
+/* ---------- Acciones del riel ---------- */
+document.getElementById('act-copy').onclick=copyPose;
+document.getElementById('act-reset').onclick=resetModule;
+document.getElementById('act-jpg').onclick=downloadJPG;
+document.getElementById('act-theme').onclick=()=>{
+  const root=document.documentElement;
+  const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme=dark?'light':'dark';
+  try{localStorage.setItem('theme',root.dataset.theme);}catch(e){}
+};
+try{const t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}
+
+/* ---------- Miniaturas de poses ---------- */
+/* renderiza cada preset con la cámara inicial del módulo a un lienzo cuadrado y lo deja en su botón */
+const THUMB=220;let thumbsReady=false;
+function makeThumbs(){
+  const pr=renderer.getPixelRatio(),size=renderer.getSize(new THREE.Vector2());
+  const pos=camera.position.clone(),fov=camera.fov,aspect=camera.aspect;
+  setHover(null);capturing=true;updateSelHelper();
+  renderer.setPixelRatio(1);renderer.setSize(THUMB,THUMB,false);
+  camera.aspect=1;camera.fov=fovFromLens(50);camera.updateProjectionMatrix();
+  const out=document.createElement('canvas');out.width=out.height=THUMB;const ctx=out.getContext('2d');
+  for(const k in MODULES){
+    const m=MODULES[k];
+    for(const j in MODULES)MODULES[j].root.visible=j===k;
+    setShadowBox(...m.shadow);
+    camera.position.copy(m.target).addScaledVector(m.dir,m.dist*m.thumbZoom);camera.lookAt(m.target);
+    const saved=clone(m.pose);
+    for(const name in m.presets){
+      lerpInto(m.pose,m.pose,m.presets[name],1);m.apply();
+      renderer.render(scene,camera);
+      ctx.drawImage(canvas,0,0);
+      m.tiles[name].querySelector('img').src=out.toDataURL('image/jpeg',0.86);
+    }
+    lerpInto(m.pose,m.pose,saved,1);m.apply();
+  }
+  for(const j in MODULES)MODULES[j].root.visible=MODULES[j]===M;
+  setShadowBox(...M.shadow);
+  camera.position.copy(pos);camera.fov=fov;camera.aspect=aspect;camera.updateProjectionMatrix();camera.lookAt(controls.target);
+  renderer.setPixelRatio(pr);renderer.setSize(size.x,size.y,false);
+  thumbsReady=true;capturing=false;
+}
 const cc=document.getElementById('camera');
-slider(cc,'c-lens','Lente',18,135,()=>cam.lens,v=>{cam.lens=v;applyLens();},' mm');
-slider(cc,'c-light','Luz giro',-180,180,()=>cam.light,v=>{cam.light=v;applyLight();});
-slider(cc,'c-height','Luz altura',5,85,()=>cam.height,v=>{cam.height=v;applyLight();});
+slider(cc,'c-lens','Lente',18,135,()=>cam.lens,v=>{cam.lens=v;applyLens();},' mm',()=>{});
+slider(cc,'c-light','Luz giro',-180,180,()=>cam.light,v=>{cam.light=v;applyLight();},'°',()=>{});
+slider(cc,'c-height','Luz altura',5,85,()=>cam.height,v=>{cam.height=v;applyLight();},'°',()=>{});
 
 /* ---------- Tema ---------- */
 function applyTheme(){
@@ -825,6 +1302,7 @@ function applyTheme(){
   scene.background=new THREE.Color(c);
   const dark=new THREE.Color(c).getHSL({}).l<0.4;
   ground.material.opacity=dark?0.35:0.18;
+  if(thumbsReady)makeThumbs();   // el fondo de las miniaturas sigue al tema
 }
 applyTheme();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
@@ -839,10 +1317,12 @@ function resize(){
 new ResizeObserver(resize).observe(canvas.parentElement);
 
 setModule(location.hash==='#cuerpo'?'body':'hand');
-syncAll();applyLight();resize();
+syncAll();applyLight();resize();makeThumbs();
 
 function loop(now){
   if(poseTween)poseTween(now);
+  if(pendingPlace.size){pendingPlace.forEach(placeTattoo);pendingPlace.clear();}
+  updateSelHelper();
   if(camTween)camTween(now);
   controls.update();
   renderer.render(scene,camera);

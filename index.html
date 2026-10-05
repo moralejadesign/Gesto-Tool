@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mano de Madera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: escenario 3D a pantalla completa + panel lateral de taller con sliders (en móvil, el panel va debajo) */
+:root{
+  --stage:#e8e6e2;
+  --panel:#f6f4f0;
+  --ink:#2a241d;
+  --muted:#7a6f62;
+  --line:#ddd6cb;
+  --wood:#c99a62;
+  --wood-dark:#8a5a2b;
+  --chip:#ece6dc;
+  --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --stage:#2b2824;--panel:#1f1d1a;--ink:#efe8dd;--muted:#a59a8b;--line:#38332d;--wood:#d6a86f;--wood-dark:#e0b37a;--chip:#2c2925;color-scheme:dark}}
+:root[data-theme="dark"]{--stage:#2b2824;--panel:#1f1d1a;--ink:#efe8dd;--muted:#a59a8b;--line:#38332d;--wood:#d6a86f;--wood-dark:#e0b37a;--chip:#2c2925;color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0}
+body{background:var(--stage);color:var(--ink);font-family:var(--body);font-size:14px;overflow:hidden}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%}
+.stage{position:relative;min-width:0;background:var(--stage)}
+#view{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+#view:active{cursor:grabbing}
+.stage-head{position:absolute;left:20px;top:16px;pointer-events:none}
+.stage-head h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0}
+.stage-head p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.views{position:absolute;left:16px;bottom:16px;display:flex;gap:6px;flex-wrap:wrap}
+.readout{position:absolute;right:16px;bottom:18px;font-family:var(--mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+
+.panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:16px 18px 40px;display:flex;flex-direction:column;gap:18px}
+.mod{display:flex;flex-direction:column;gap:18px}
+.mod[hidden]{display:none}
+.mode{position:sticky;top:-16px;z-index:2;margin-top:-16px;padding:16px 0 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+.mode button.chip{font-size:13.5px;padding:7px 16px;font-weight:600}
+.sec h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+button.chip{font:inherit;font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+button.chip:hover{border-color:var(--wood)}
+button.chip[aria-pressed="true"]{background:var(--wood-dark);border-color:var(--wood-dark);color:var(--panel)}
+button.chip:focus-visible,input[type=range]:focus-visible,summary:focus-visible{outline:2px solid var(--wood-dark);outline-offset:2px}
+.stage .chip{background:color-mix(in srgb,var(--panel) 85%,transparent);backdrop-filter:blur(6px)}
+
+.row{display:grid;grid-template-columns:86px minmax(0,1fr) 44px;align-items:center;gap:10px;padding:3px 0}
+.row label{font-size:13px}
+.row output{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;margin-top:-6px;
+  background:radial-gradient(circle at 35% 30%,#f3d9b2,#c99a62 55%,#9c6a36);border:1px solid #8a5a2b;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3d9b2,#c99a62 55%,#9c6a36);border:1px solid #8a5a2b}
+
+details.part{border-top:1px solid var(--line)}
+details.part:last-child{border-bottom:1px solid var(--line)}
+details.part summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-weight:600;font-size:13.5px}
+details.part summary::-webkit-details-marker{display:none}
+details.part summary::after{content:"+";font-family:var(--mono);color:var(--muted);font-weight:400}
+details.part[open] summary::after{content:"–"}
+details.part .body{padding:0 0 10px}
+#view.over-part{cursor:pointer}
+@keyframes flash{from{background:color-mix(in srgb,var(--wood) 28%,transparent)}to{background:transparent}}
+details.part.flash{animation:flash .9s ease-out}
+.hint{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.45}
+.toast{position:absolute;top:16px;right:16px;background:var(--ink);color:var(--panel);font-size:12.5px;padding:7px 12px;border-radius:6px}
+
+@media (max-width:760px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}
+  .stage{height:62vh}
+  .panel{border-left:0;border-top:1px solid var(--line);overflow:visible}
+  .readout{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="stage">
+    <canvas id="view" aria-label="Maniquí de madera en 3D. Arrastra para rotar la vista, rueda para acercar."></canvas>
+    <div class="stage-head">
+      <h1 id="title">Mano de madera</h1>
+      <p id="hint">Arrastra para girar · rueda o pellizco para acercar · clic derecho para mover · clic en un dedo para editarlo</p>
+    </div>
+    <div class="views" id="views"></div>
+    <div class="readout" id="readout"></div>
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <aside class="panel" id="panel">
+    <nav class="chips mode" aria-label="Herramienta">
+      <button class="chip" data-mod="hand" aria-pressed="true">Mano</button>
+      <button class="chip" data-mod="body" aria-pressed="false">Cuerpo</button>
+    </nav>
+
+    <div class="mod" id="mod-hand">
+    <section class="sec">
+      <h2>Poses</h2>
+      <div class="chips" id="presets"></div>
+    </section>
+
+    <section class="sec">
+      <h2>Mano completa</h2>
+      <div id="global"></div>
+      <div class="chips" style="margin-top:8px">
+        <button class="chip" id="sideR" aria-pressed="true">Derecha</button>
+        <button class="chip" id="sideL" aria-pressed="false">Izquierda</button>
+        <button class="chip" id="copy">Copiar pose</button>
+        <button class="chip" id="reset">Restablecer</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Dedos</h2>
+      <div id="fingers"></div>
+      <p class="hint">Base, medio y punta corresponden a los nudillos MCP, PIP y DIP. Los rangos están limitados para que ninguna falange se doble al revés.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Muñeca</h2>
+      <div id="wrist"></div>
+    </section>
+    </div>
+
+    <div class="mod" id="mod-body" hidden>
+    <section class="sec">
+      <h2>Poses</h2>
+      <div class="chips" id="b-presets"></div>
+    </section>
+
+    <section class="sec">
+      <h2>Cuerpo completo</h2>
+      <div class="chips" role="group" aria-label="Canon">
+        <button class="chip" id="b-canon8" aria-pressed="true">8 cabezas</button>
+        <button class="chip" id="b-canon75" aria-pressed="false">7.5 cabezas</button>
+        <button class="chip" id="b-stand" aria-pressed="true">Soporte</button>
+      </div>
+      <div class="chips" style="margin-top:8px">
+        <button class="chip" id="b-copy">Copiar pose</button>
+        <button class="chip" id="b-reset">Restablecer</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Partes</h2>
+      <div id="b-parts"></div>
+      <p class="hint">Izquierda y derecha son las del maniquí: visto de frente, su brazo izquierdo queda a tu derecha.</p>
+    </section>
+    </div>
+
+    <section class="sec">
+      <h2>Cámara y luz</h2>
+      <div id="camera"></div>
+      <p class="hint">El lente mantiene el encuadre: a 24 mm la cámara se acerca y exagera el escorzo; a 135 mm se aleja y aplana la forma.</p>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+const D = Math.PI/180;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Madera procedural ---------- */
+function hash3(x,y,z){let h=x*374761393+y*668265263+z*2147483647;h=(h^(h>>>13))*1274126177;h=h^(h>>>16);return (h>>>0)/4294967295;}
+function vnoise(x,y,z){
+  const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z);
+  const xf=x-xi,yf=y-yi,zf=z-zi;
+  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf);
+  const l=(a,b,t)=>a+(b-a)*t;
+  const c=(i,j,k)=>hash3(xi+i,yi+j,zi+k);
+  return l(l(l(c(0,0,0),c(1,0,0),u),l(c(0,1,0),c(1,1,0),u),v),l(l(c(0,0,1),c(1,0,1),u),l(c(0,1,1),c(1,1,1),u),v),w);
+}
+function fbm(x,y,z){let s=0,a=.5,f=1;for(let i=0;i<4;i++){s+=a*vnoise(x*f,y*f,z*f);f*=2.03;a*=.5;}return s;}
+
+function makeWoodCanvas(seed){
+  const W=512,H=512,c=document.createElement('canvas');c.width=W;c.height=H;
+  const ctx=c.getContext('2d'),img=ctx.createImageData(W,H),d=img.data;
+  const light=[228,192,146],mid=[208,164,112],dark=[168,118,70];
+  for(let y=0;y<H;y++){
+    const ny=y/H;
+    for(let x=0;x<W;x++){
+      const a=x/W*Math.PI*2, cx=Math.cos(a)*1.6, sy=Math.sin(a)*1.6;
+      const warp=fbm(cx+seed,sy,ny*2.2);
+      let v=1.4*Math.sin(a+seed)+warp*1.6+ny*0.9;
+      let ring=v*2.6; ring=ring-Math.floor(ring);
+      const band=Math.pow(1-Math.abs(ring*2-1),9);          // líneas de anillo finas
+      const soft=fbm(cx*2,sy*2+seed,ny*6)*0.5;              // variación suave
+      const fiber=(hash3(x,Math.floor(y/6),7)-.5)*0.08;     // fibra a lo largo
+      let t=Math.min(1,Math.max(0,0.25+soft*0.6+fiber));
+      const r=light[0]+(mid[0]-light[0])*t, g=light[1]+(mid[1]-light[1])*t, b=light[2]+(mid[2]-light[2])*t;
+      const k=band*0.32;
+      const i=(y*W+x)*4;
+      d[i]=r+(dark[0]-r)*k; d[i+1]=g+(dark[1]-g)*k; d[i+2]=b+(dark[2]-b)*k; d[i+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  return c;
+}
+
+/* ---------- Escena ---------- */
+const canvas=document.getElementById('view');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=0.95;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(30,1,0.1,200);
+const controls=new THREE.OrbitControls(camera,canvas);
+controls.enableDamping=true;controls.dampingFactor=.08;
+controls.minDistance=2.5;controls.maxDistance=60;
+
+const hemi=new THREE.HemisphereLight(0xfff6ea,0x8c7a66,0.75);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xfff1de,1.6);
+key.castShadow=true;key.shadow.mapSize.set(2048,2048);
+key.shadow.camera.near=1;key.shadow.camera.far=40;key.shadow.bias=-0.0004;key.shadow.normalBias=0.02;key.shadow.radius=4;
+scene.add(key);scene.add(key.target);
+const fill=new THREE.DirectionalLight(0xe6eeff,0.35);fill.position.set(-6,3,-4);scene.add(fill);
+/* la caja de sombra se ajusta al módulo: más ajustada para la mano, más amplia para el cuerpo */
+function setShadowBox(s,y){
+  const c=key.shadow.camera;c.left=-s;c.right=s;c.top=s+1;c.bottom=-s;c.updateProjectionMatrix();
+  key.target.position.set(0,y,0);
+}
+
+const FLOOR=-3.2;
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.ShadowMaterial({opacity:.18}));
+ground.rotation.x=-Math.PI/2;ground.position.y=FLOOR;ground.receiveShadow=true;scene.add(ground);
+
+/* materiales: varias vetas para que cada pieza se vea tallada aparte */
+const woodTextures=[0.3,1.7,3.1,4.4].map(s=>{
+  const t=new THREE.CanvasTexture(makeWoodCanvas(s));
+  t.encoding=THREE.sRGBEncoding;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;return t;});
+let matCount=0;
+function woodMat(tint){
+  const base=woodTextures[matCount++%woodTextures.length];
+  const map=base.clone();map.needsUpdate=true;map.offset.set(Math.random(),0);
+  return new THREE.MeshStandardMaterial({map,bumpMap:map,bumpScale:0.004,roughness:0.62,metalness:0,color:tint||0xffffff});
+}
+const pinTint=0xe9d7bd;
+
+function mesh(geo,mat){const m=new THREE.Mesh(geo,mat);m.castShadow=true;m.receiveShadow=true;return m;}
+function lathe(points,seg){return new THREE.LatheGeometry(points.map(p=>new THREE.Vector2(p[0],p[1])),seg||48);}
+function smoothLathe(points,seg){return new THREE.LatheGeometry(new THREE.SplineCurve(points.map(p=>new THREE.Vector2(p[0],p[1]))).getPoints(60),seg||56);}
+function ball(r){return mesh(new THREE.SphereGeometry(r,32,20),woodMat(pinTint));}
+
+/* perfil de una falange: cilindro con cantos redondeados; la última termina en domo */
+function phalanxGeo(r,y0,y1,tip){
+  const p=[[0,y0],[r*0.72,y0],[r*0.92,y0+r*0.06],[r,y0+r*0.22]];
+  if(tip){
+    const top=y1-r;
+    p.push([r*0.985,top]);
+    for(let i=1;i<=10;i++){const a=i/10*Math.PI/2;p.push([Math.cos(a)*r*0.985,top+Math.sin(a)*r]);}
+  }else{
+    p.push([r*0.985,y1-r*0.22],[r*0.92,y1-r*0.06],[r*0.72,y1],[0,y1]);
+  }
+  return lathe(p,40);
+}
+/* bisagra: barril horizontal donde encajan las falanges */
+function hinge(r){
+  const g=new THREE.CylinderGeometry(r*0.78,r*0.78,r*1.86,32);g.rotateZ(Math.PI/2);
+  return mesh(g,woodMat(pinTint));
+}
+
+const R=deg=>deg*D;
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ================= Componente mano ================= */
+/* Construye la mano dentro de `parent` y devuelve {wrist, rig}. La usan el módulo Mano y cada muñeca del Cuerpo. */
+const FINGERS={
+  index :{x: 0.57,y:1.80,r:0.185,L:[0.66,0.44,0.40]},
+  middle:{x: 0.19,y:1.86,r:0.195,L:[0.74,0.50,0.42]},
+  ring  :{x:-0.19,y:1.82,r:0.185,L:[0.68,0.46,0.40]},
+  pinky :{x:-0.56,y:1.66,r:0.155,L:[0.52,0.36,0.33]},
+};
+const FINGER_NAMES=Object.keys(FINGERS);
+const palmPts=new THREE.SplineCurve([[0,0],[0.28,0.02],[0.55,0.12],[0.76,0.38],[0.88,0.78],[0.9,1.15],[0.88,1.45],[0.82,1.66],[0.66,1.8],[0.36,1.87],[0,1.89]].map(p=>new THREE.Vector2(p[0],p[1]))).getPoints(60);
+function buildHand(parent){
+  const wrist=new THREE.Group();wrist.rotation.order='YXZ';parent.add(wrist);
+  const wristBall=mesh(new THREE.SphereGeometry(0.42,40,24),woodMat(pinTint));wristBall.scale.set(1,0.75,0.82);wristBall.position.y=-0.12;wrist.add(wristBall);
+
+  /* palma: torneada y aplanada */
+  const palm=mesh(new THREE.LatheGeometry(palmPts,72),woodMat());palm.scale.set(1,1,0.48);palm.position.y=0.02;wrist.add(palm);
+
+  const rig={};
+  for(const [name,f] of Object.entries(FINGERS)){
+    const joints=[];
+    const root=new THREE.Group();root.position.set(f.x,f.y,0);root.rotation.order='ZXY';wrist.add(root);
+    let j=root;
+    for(let i=0;i<3;i++){
+      const r=f.r*(1-0.06*i);
+      j.add(hinge(r));
+      j.add(mesh(phalanxGeo(r,r*0.62,f.L[i]-(i<2?r*0.62:0),i===2),woodMat()));
+      joints.push(j);
+      if(i<2){const n=new THREE.Group();n.position.y=f.L[i];j.add(n);j=n;}
+    }
+    rig[name]={root,joints};
+  }
+
+  /* pulgar: metacarpo que sale de la palma + dos falanges */
+  const r=0.21;
+  const root=new THREE.Group();root.position.set(0.58,0.48,0.1);root.rotation.order='ZXY';wrist.add(root);
+  const roll=new THREE.Group();root.add(roll);
+  roll.add(mesh(new THREE.SphereGeometry(r*1.05,32,20),woodMat(pinTint)));
+  roll.add(mesh(phalanxGeo(r*1.08,0,0.62,false),woodMat()));
+  const j1=new THREE.Group();j1.position.y=0.62+r*0.62;roll.add(j1);
+  j1.add(hinge(r));
+  j1.add(mesh(phalanxGeo(r,r*0.62,0.46-r*0.62,false),woodMat()));
+  const j2=new THREE.Group();j2.position.y=0.46;j1.add(j2);
+  j2.add(hinge(r*0.95));
+  j2.add(mesh(phalanxGeo(r*0.95,r*0.6,0.46,true),woodMat()));
+  rig.thumb={root,roll,joints:[j1,j2]};
+
+  /* cada malla de un dedo sabe a qué dedo pertenece, para poder elegirlo con clic */
+  for(const name of ['thumb',...FINGER_NAMES])rig[name].root.traverse(o=>{if(o.isMesh)o.userData.part=name;});
+  return {wrist,rig};
+}
+/* traduce dedos (p) y muñeca (w), en grados, a rotaciones de la mano h */
+function applyHand(h,p,w){
+  h.wrist.rotation.set(R(w.flex),R(w.twist),R(w.dev));
+  for(const n of FINGER_NAMES){
+    const f=p[n],g=h.rig[n];
+    const sign=n==='index'||n==='middle'?-1:1;
+    g.root.rotation.set(R(f.mcp),0,R(sign*f.spr));
+    g.joints[1].rotation.x=R(f.pip);
+    g.joints[2].rotation.x=R(f.dip);
+  }
+  const t=p.thumb,g=h.rig.thumb;
+  g.root.rotation.set(R(t.fwd),0,R(-(18+t.abd)));
+  g.roll.rotation.y=R(-25+t.roll);
+  g.roll.rotation.x=R(t.mcp*0.35);
+  g.joints[0].rotation.x=R(t.mcp);
+  g.joints[1].rotation.x=R(t.ip);
+}
+/* "Cerrar": lleva los dedos de abierta (k=0) a puño (k=1) sin tocar la separación */
+function applyFist(f,k){
+  for(const n of FINGER_NAMES){f[n].mcp=Math.round(3+85*k);f[n].pip=Math.round(4+96*k);f[n].dip=Math.round(2+58*k);}
+  f.thumb.fwd=Math.round(10+20*k);f.thumb.mcp=Math.round(5+29*k);f.thumb.ip=Math.round(5+35*k);f.thumb.roll=Math.round(-55*k);f.thumb.abd=Math.round(20-18*k);
+}
+
+/* ---------- Poses de la mano (grados) ---------- */
+const HAND_NEUTRAL={
+  wrist:{flex:0,dev:0,twist:0},
+  thumb:{abd:20,fwd:10,roll:0,mcp:5,ip:5},
+  index:{mcp:3,pip:4,dip:2,spr:4},
+  middle:{mcp:3,pip:4,dip:2,spr:0},
+  ring:{mcp:3,pip:4,dip:2,spr:3},
+  pinky:{mcp:4,pip:5,dip:3,spr:6},
+};
+const HAND_PRESETS={
+  'Abierta':HAND_NEUTRAL,
+  'Relajada':{wrist:{flex:8,dev:-4,twist:0},thumb:{abd:12,fwd:24,roll:-12,mcp:14,ip:12},index:{mcp:14,pip:22,dip:10,spr:3},middle:{mcp:20,pip:30,dip:14,spr:0},ring:{mcp:26,pip:36,dip:18,spr:2},pinky:{mcp:32,pip:40,dip:20,spr:5}},
+  'Puño':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:88,pip:100,dip:60,spr:0},middle:{mcp:90,pip:102,dip:62,spr:0},ring:{mcp:90,pip:100,dip:60,spr:0},pinky:{mcp:88,pip:98,dip:58,spr:0}},
+  'Señalar':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:0,pip:2,dip:0,spr:2},middle:{mcp:88,pip:102,dip:60,spr:0},ring:{mcp:90,pip:100,dip:60,spr:0},pinky:{mcp:88,pip:98,dip:58,spr:0}},
+  'Paz':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:0,pip:0,dip:0,spr:12},middle:{mcp:0,pip:0,dip:0,spr:-10},ring:{mcp:88,pip:100,dip:60,spr:0},pinky:{mcp:86,pip:98,dip:58,spr:0}},
+  'Rock':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:0,pip:2,dip:0,spr:8},middle:{mcp:88,pip:102,dip:60,spr:0},ring:{mcp:90,pip:100,dip:60,spr:0},pinky:{mcp:0,pip:2,dip:0,spr:14}},
+  'OK':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:14,fwd:46,roll:-30,mcp:22,ip:24},index:{mcp:46,pip:62,dip:40,spr:0},middle:{mcp:8,pip:8,dip:4,spr:0},ring:{mcp:10,pip:10,dip:5,spr:6},pinky:{mcp:12,pip:12,dip:6,spr:14}},
+  'Garra':{wrist:{flex:-20,dev:0,twist:0},thumb:{abd:40,fwd:20,roll:-10,mcp:30,ip:50},index:{mcp:-8,pip:80,dip:60,spr:12},middle:{mcp:-8,pip:84,dip:62,spr:0},ring:{mcp:-8,pip:82,dip:60,spr:8},pinky:{mcp:-8,pip:78,dip:58,spr:18}},
+  'Pinza':{wrist:{flex:10,dev:0,twist:0},thumb:{abd:16,fwd:48,roll:-34,mcp:18,ip:14},index:{mcp:42,pip:40,dip:20,spr:0},middle:{mcp:50,pip:60,dip:30,spr:0},ring:{mcp:62,pip:76,dip:40,spr:0},pinky:{mcp:70,pip:84,dip:46,spr:0}},
+};
+const fingersOf=name=>{const o=clone(HAND_PRESETS[name]);delete o.wrist;return o;};
+
+/* ---------- Cámara ---------- */
+const cam={lens:50,light:35,height:55};
+const MODULES={};
+let M=null;   // módulo activo: define root, pose, objetivo, distancia base y vistas
+function fovFromLens(mm){return 2*Math.atan(12/mm)/D;} // sensor full-frame, 24 mm de alto
+function applyLens(){
+  const dir=new THREE.Vector3().subVectors(camera.position,controls.target).normalize();
+  camera.fov=fovFromLens(cam.lens);
+  camera.position.copy(controls.target).addScaledVector(dir,M.dist*cam.lens/50);
+  camera.updateProjectionMatrix();
+}
+function applyLight(){
+  const a=R(cam.light),e=R(cam.height),r=12;
+  key.position.set(Math.sin(a)*Math.cos(e)*r,Math.sin(e)*r,Math.cos(a)*Math.cos(e)*r);
+}
+const VIEW_NAMES=['Frente','Tres cuartos','Perfil','Dorso','Arriba','Abajo'];
+function setView(name){
+  const v=new THREE.Vector3(...M.views[name]).normalize();
+  const to=controls.target.clone().addScaledVector(v,M.dist*cam.lens/50);
+  tweenCamera(to);
+}
+let camTween=null;
+function tweenCamera(to){
+  const from=camera.position.clone(),start=performance.now(),dur=reduceMotion?0:600;
+  camTween=(now)=>{
+    const k=dur?Math.min(1,(now-start)/dur):1,e=1-Math.pow(1-k,3);
+    // interpolación esférica alrededor del objetivo
+    const a=from.clone().sub(controls.target),b=to.clone().sub(controls.target);
+    const len=a.length()+(b.length()-a.length())*e;
+    const dir=a.normalize().lerp(b.normalize(),e).normalize();
+    camera.position.copy(controls.target).addScaledVector(dir,len);
+    if(k>=1)camTween=null;
+  };
+}
+
+/* ---------- UI compartida ---------- */
+const ui={};       // id -> {sync}
+function slider(container,id,label,min,max,get,set,unit){
+  const row=document.createElement('div');row.className='row';
+  row.innerHTML=`<label for="${id}">${label}</label><input type="range" id="${id}" min="${min}" max="${max}" step="1"><output for="${id}"></output>`;
+  container.appendChild(row);
+  const input=row.querySelector('input'),out=row.querySelector('output');
+  const u=unit||'°';
+  const sync=()=>{const v=get();input.value=v;out.textContent=Math.round(v)+u;};
+  input.addEventListener('input',()=>{set(+input.value);out.textContent=input.value+u;onChange();});
+  ui[id]={sync};sync();
+}
+function syncAll(){for(const k in ui)ui[k].sync();}
+function onChange(){M.apply();M.clearMark();}
+function chip(container,label,onClick,pressed){
+  const b=document.createElement('button');b.className='chip';b.textContent=label;
+  if(pressed!==undefined)b.setAttribute('aria-pressed',pressed?'true':'false');
+  b.addEventListener('click',onClick);container.appendChild(b);return b;
+}
+function pressOnly(group,btn){group.forEach(b=>b.setAttribute('aria-pressed',b===btn?'true':'false'));}
+
+/* interpolación de poses anidadas (las del cuerpo llevan las manos adentro) */
+function lerpInto(t,a,b,e){
+  for(const k in b){
+    if(typeof b[k]==='object')lerpInto(t[k],a[k],b[k],e);
+    else t[k]=e>=1?b[k]:a[k]+(b[k]-a[k])*e;
+  }
+}
+let poseTween=null;
+function tweenPose(m,to){
+  const from=clone(m.pose),start=performance.now(),dur=reduceMotion?0:450;
+  poseTween=(now)=>{
+    const k=dur?Math.min(1,(now-start)/dur):1,e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    lerpInto(m.pose,from,to,k>=1?1:e);
+    m.apply();
+    if(k>=1){poseTween=null;syncAll();}
+  };
+}
+/* chips de poses de un módulo */
+function presetChips(m,container){
+  const btns={};
+  m.goPreset=name=>{tweenPose(m,clone(m.presets[name]));if(m.onPreset)m.onPreset();pressOnly(Object.values(btns),btns[name]);};
+  m.clearMark=()=>Object.values(btns).forEach(b=>b.setAttribute('aria-pressed','false'));
+  for(const name of Object.keys(m.presets))btns[name]=chip(container,name,()=>m.goPreset(name),name===m.defaultPreset);
+}
+/* acordeón de una parte; clic en la parte en 3D lo abre */
+function partSection(m,container,key,label,open){
+  const det=document.createElement('details');det.className='part';det.open=!!open;
+  det.innerHTML=`<summary>${label}</summary><div class="body"></div>`;container.appendChild(det);
+  m.details[key]=det;
+  return det.querySelector('.body');
+}
+function openPart(key){
+  const ds=M.details;
+  for(const k in ds)ds[k].open=k===key;
+  const det=ds[key];
+  det.classList.remove('flash');void det.offsetWidth;det.classList.add('flash');
+  det.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest'});
+}
+
+const toast=document.getElementById('toast');let toastT;
+function say(msg){toast.textContent=msg;toast.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>toast.hidden=true,1800);}
+function copyPose(){
+  const txt=JSON.stringify(M.exportPose(),null,1);
+  try{navigator.clipboard.writeText(txt).then(()=>say('Pose copiada como JSON'),()=>say('No se pudo copiar en este navegador'));}catch(e){say('No se pudo copiar en este navegador');}
+}
+// restablecer: pose, lente, luz y cámara vuelven al estado inicial del módulo
+function resetModule(){
+  M.goPreset(M.defaultPreset);
+  if(M.onReset)M.onReset();
+  cam.lens=50;cam.light=35;cam.height=55;camera.fov=fovFromLens(cam.lens);camera.updateProjectionMatrix();applyLight();
+  controls.target.copy(M.target);
+  tweenCamera(M.target.clone().addScaledVector(M.dir,M.dist));
+  syncAll();
+}
+
+/* ================= Módulo Mano ================= */
+(function(){
+  const root=new THREE.Group();scene.add(root);
+  /* base cónica + anillo de muñeca */
+  const baseGeo=lathe([[0,-3.2],[0.66,-3.2],[0.72,-3.16],[0.74,-3.08],[0.6,-1.0],[0.6,-0.98],[0.66,-0.95],[0.68,-0.88],[0.68,-0.58],[0.64,-0.52],[0.5,-0.5],[0.48,-0.42],[0.47,-0.3],[0,-0.3]],56);
+  root.add(mesh(baseGeo,woodMat()));
+  const hand=buildHand(root);
+
+  const m=MODULES.hand={
+    id:'hand',title:'Mano de madera',hint:'clic en un dedo para editarlo',
+    root,panel:document.getElementById('mod-hand'),details:{},
+    presets:HAND_PRESETS,defaultPreset:'Relajada',pose:clone(HAND_PRESETS['Relajada']),
+    target:new THREE.Vector3(0,0.35,0),dir:new THREE.Vector3(5.5,2.85,12.5).normalize(),dist:15,shadow:[5,0.5],
+    views:{'Frente':[0,0.9,1],'Tres cuartos':[0.75,0.55,0.75],'Perfil':[1,0.15,0],'Dorso':[0,0.5,-1],'Arriba':[0.05,1,0.2],'Abajo':[0.2,-0.55,0.8]},
+    apply(){applyHand(hand,m.pose,m.pose.wrist);},
+    onPreset(){fistAmt=0;spreadAmt=0;},
+    exportPose(){return {herramienta:'mano',mano:root.scale.x<0?'izquierda':'derecha',lente_mm:cam.lens,pose:m.pose};},
+  };
+  const pose=m.pose;
+  presetChips(m,document.getElementById('presets'));
+
+  // global
+  const gl=document.getElementById('global');
+  let fistAmt=0,spreadAmt=0;
+  slider(gl,'g-fist','Cerrar',0,100,()=>fistAmt,v=>{fistAmt=v;applyFist(pose,v/100);syncAll();},'%');
+  slider(gl,'g-spread','Separar',0,100,()=>spreadAmt,v=>{
+    spreadAmt=v;const k=v/100;
+    pose.index.spr=Math.round(4+16*k);pose.middle.spr=Math.round(-2*k);pose.ring.spr=Math.round(3+11*k);pose.pinky.spr=Math.round(6+20*k);pose.thumb.abd=Math.round(20+45*k);
+    syncAll();
+  },'%');
+
+  // dedos
+  const NAMES={thumb:'Pulgar',index:'Índice',middle:'Medio',ring:'Anular',pinky:'Meñique'};
+  const fc=document.getElementById('fingers');
+  for(const n of ['thumb',...FINGER_NAMES]){
+    const b=partSection(m,fc,n,NAMES[n],n==='index');
+    const s=(k,label,min,max)=>slider(b,`${n}-${k}`,label,min,max,()=>pose[n][k],v=>pose[n][k]=v);
+    if(n==='thumb'){
+      s('abd','Abrir',0,75);s('fwd','Hacia palma',-15,75);s('roll','Rotar',-60,40);s('mcp','Base',-10,75);s('ip','Punta',-20,85);
+    }else{
+      s('mcp','Base',-20,95);s('pip','Medio',0,110);s('dip','Punta',-5,80);
+      s('spr','Separar',n==='middle'?-15:-10,n==='middle'?15:28);
+    }
+  }
+
+  // muñeca
+  const wc=document.getElementById('wrist');
+  slider(wc,'w-flex','Doblar',-70,80,()=>pose.wrist.flex,v=>pose.wrist.flex=v);
+  slider(wc,'w-dev','Inclinar',-25,35,()=>pose.wrist.dev,v=>pose.wrist.dev=v);
+  slider(wc,'w-twist','Girar',-90,90,()=>pose.wrist.twist,v=>pose.wrist.twist=v);
+
+  // lado de la mano: el modelo sin espejar (palma +Z, pulgar +X) es una mano derecha
+  const sideR=document.getElementById('sideR'),sideL=document.getElementById('sideL');
+  function setSide(right){root.scale.x=right?1:-1;sideR.setAttribute('aria-pressed',right);sideL.setAttribute('aria-pressed',!right);}
+  sideR.onclick=()=>setSide(true);sideL.onclick=()=>setSide(false);
+  document.getElementById('copy').onclick=copyPose;
+  document.getElementById('reset').onclick=resetModule;
+  m.apply();
+})();
+
+/* ================= Módulo Cuerpo ================= */
+/* Unidades: 1 = una cabeza. Canon de 8 cabezas: figura de 176 cm, 22 cm por cabeza.
+   El maniquí mira hacia +Z; su izquierda está en +X. Brazos y piernas se construyen del lado
+   derecho (-X) y el izquierdo es el mismo grupo espejado con scale.x = -1. */
+(function(){
+  const CM=22;                 // cm por cabeza
+  const PELVIS_Y=4.3;          // centro de la pelvis sobre la planta del pie
+  const STAND_H=0.2;
+
+  /* segmento de brazo o pierna: torno que va de y=0 (proximal, radio r0) a y=-L (distal, radio r1) */
+  function limbGeo(r0,r1,L,bulge,peak){
+    const p=[[0,0],[r1*.72,0],[r1*.92,r1*.06]];
+    const y0=r1*.22,y1=L-r0*.22,n=14;
+    for(let i=0;i<=n;i++){
+      const t=i/n,y=y0+(y1-y0)*t;
+      const b=Math.sin(Math.PI*Math.pow(t,Math.log(.5)/Math.log(peak||.5)));
+      p.push([r1+(r0-r1)*t+(bulge||0)*b,y]);
+    }
+    p.push([r0*.92,L-r0*.06],[r0*.72,L],[0,L]);
+    const g=lathe(p,40);g.translate(0,-L,0);return g;
+  }
+
+  const root=new THREE.Group();scene.add(root);root.visible=false;
+  const parts={};   // malla -> parte, para el clic
+  const tag=(obj,part)=>obj.traverse(o=>{if(o.isMesh)o.userData.part=part;});
+
+  /* soporte: disco + varilla que entra en la pelvis, como un maniquí de taller */
+  const stand=new THREE.Group();root.add(stand);
+  stand.add(mesh(lathe([[0,FLOOR],[1.18,FLOOR],[1.24,FLOOR+0.03],[1.26,FLOOR+0.1],[1.22,FLOOR+0.17],[1.12,FLOOR+STAND_H],[0,FLOOR+STAND_H]],64),woodMat()));
+  const figure=new THREE.Group();figure.position.y=FLOOR+STAND_H;root.add(figure);
+  const rodGeo=new THREE.CylinderGeometry(0.06,0.06,1,20);rodGeo.translate(0,0.5,0);
+  const rod=mesh(rodGeo,woodMat(pinTint));stand.add(rod);rod.position.y=FLOOR+STAND_H;
+
+  /* pelvis */
+  const pelvis=new THREE.Group();pelvis.rotation.order='YXZ';pelvis.position.y=PELVIS_Y;figure.add(pelvis);
+  const pelvisMesh=mesh(smoothLathe([[0,-0.42],[0.32,-0.4],[0.52,-0.3],[0.61,-0.1],[0.62,0.08],[0.55,0.26],[0.42,0.36],[0,0.38]]),woodMat());
+  pelvisMesh.scale.z=0.68;pelvis.add(pelvisMesh);tag(pelvisMesh,'hips');
+
+  /* torso: cintura y pecho reparten la flexión del tronco */
+  const waist=new THREE.Group();waist.rotation.order='YXZ';waist.position.y=0.45;pelvis.add(waist);
+  const waistBall=ball(0.28);waistBall.scale.set(1.25,0.75,0.9);waist.add(waistBall);
+  const abdomen=mesh(smoothLathe([[0,0.12],[0.34,0.13],[0.43,0.22],[0.46,0.38],[0.42,0.52],[0.32,0.6],[0,0.62]]),woodMat());abdomen.scale.z=0.72;waist.add(abdomen);
+  const chest=new THREE.Group();chest.rotation.order='YXZ';chest.position.y=0.68;waist.add(chest);
+  const chestBall=ball(0.26);chestBall.scale.set(1.4,0.7,0.95);chest.add(chestBall);
+  const chestMesh=mesh(smoothLathe([[0,0.06],[0.4,0.08],[0.6,0.25],[0.74,0.6],[0.78,0.88],[0.72,1.12],[0.56,1.3],[0.3,1.38],[0,1.4]]),woodMat());chestMesh.scale.z=0.6;chest.add(chestMesh);
+  tag(waist,'torso');
+
+  /* cuello y cabeza */
+  const neck=new THREE.Group();neck.rotation.order='YXZ';neck.position.y=1.33;chest.add(neck);
+  neck.add(mesh(limbGeo(0.15,0.16,0.34).translate(0,0.34,0),woodMat()));
+  const headJ=new THREE.Group();headJ.rotation.order='YXZ';headJ.position.y=0.26;neck.add(headJ);
+  const headMesh=mesh(smoothLathe([[0,-0.04],[0.17,-0.02],[0.29,0.1],[0.36,0.33],[0.38,0.55],[0.37,0.75],[0.3,0.9],[0.17,0.97],[0,0.98]]),woodMat());
+  headMesh.scale.z=1.18;headMesh.position.z=0.04;headJ.add(headMesh);
+  tag(neck,'head');
+
+  /* brazo derecho canónico; mount de la mano: dedos hacia abajo, palma hacia el muslo y pulgar adelante */
+  const HAND_SCALE=0.22;
+  const handQ=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,1).normalize(),Math.PI);
+  function buildArm(side,s){
+    const shoulder=new THREE.Group();shoulder.rotation.order='ZXY';shoulder.position.set(-0.86,1.0,0);side.add(shoulder);
+    shoulder.add(ball(0.21));
+    const upper=mesh(limbGeo(0.17,0.125,1.42-0.18-0.1,0.012,0.35),woodMat());upper.position.y=-0.18;shoulder.add(upper);
+    const elbow=new THREE.Group();elbow.position.y=-1.42;shoulder.add(elbow);
+    elbow.add(ball(0.13));
+    const fore=mesh(limbGeo(0.135,0.095,1.15-0.1-0.06,0.012,0.3),woodMat());fore.position.y=-0.1;elbow.add(fore);
+    tag(shoulder,'arm'+s);
+    const mount=new THREE.Group();mount.position.y=-1.15;mount.quaternion.copy(handQ);mount.scale.setScalar(HAND_SCALE);elbow.add(mount);
+    const hand=buildHand(mount);tag(mount,'hand'+s);
+    return {shoulder,elbow,hand};
+  }
+  function buildLeg(side,s){
+    const hip=new THREE.Group();hip.rotation.order='ZXY';hip.position.set(-0.4,-0.3,0);side.add(hip);
+    hip.add(ball(0.21));
+    const thigh=mesh(limbGeo(0.26,0.165,1.95-0.14-0.1,0.02,0.35),woodMat());thigh.position.y=-0.14;hip.add(thigh);
+    const knee=new THREE.Group();knee.position.y=-1.95;hip.add(knee);
+    knee.add(ball(0.16));
+    const shin=mesh(limbGeo(0.175,0.11,1.68-0.1-0.06,0.03,0.3),woodMat());shin.position.y=-0.1;knee.add(shin);
+    const ankle=new THREE.Group();ankle.position.y=-1.68;knee.add(ankle);
+    ankle.add(ball(0.11));
+    const footGeo=smoothLathe([[0,0],[0.12,0.02],[0.19,0.14],[0.21,0.36],[0.2,0.62],[0.17,0.86],[0.1,1.0],[0,1.03]],40);
+    footGeo.rotateX(Math.PI/2);footGeo.translate(0,0,-0.25);
+    const foot=mesh(footGeo,woodMat());foot.scale.y=0.62;foot.position.y=-0.37+0.21*0.62;ankle.add(foot);
+    tag(hip,'leg'+s);
+    return {hip,knee,ankle};
+  }
+  const sides={R:new THREE.Group(),L:new THREE.Group()};sides.L.scale.x=-1;
+  const legSides={R:new THREE.Group(),L:new THREE.Group()};legSides.L.scale.x=-1;
+  const arms={},legs={};
+  for(const s of ['R','L']){
+    chest.add(sides[s]);arms[s]=buildArm(sides[s],s);
+    pelvis.add(legSides[s]);legs[s]=buildLeg(legSides[s],s);
+  }
+
+  /* ---------- Poses del cuerpo (grados; Altura de la cadera en cm) ---------- */
+  const BASE={
+    hips:{lift:0,bend:0,side:0,twist:0},
+    torso:{bend:0,side:0,twist:0},
+    head:{nod:0,tilt:0,turn:0},
+    armL:{raise:6,fwd:0,twist:0,elbow:8},armR:{raise:6,fwd:0,twist:0,elbow:8},
+    wristL:{flex:0,dev:0,twist:0},wristR:{flex:0,dev:0,twist:0},
+    handL:fingersOf('Relajada'),handR:fingersOf('Relajada'),
+    legL:{fwd:0,abd:3,twist:0,knee:0,ankle:0},legR:{fwd:0,abd:3,twist:0,knee:0,ankle:0},
+  };
+  /* cada preset solo dice lo que cambia respecto a BASE; las manos se nombran por su preset */
+  function bodyPose(over){
+    const p=clone(BASE);
+    for(const k in over){if(typeof over[k]==='string')p[k]=fingersOf(over[k]);else Object.assign(p[k],over[k]);}
+    return p;
+  }
+  const BODY_PRESETS={
+    'De pie':bodyPose({}),
+    'Contrapposto':bodyPose({hips:{side:7,twist:6},torso:{side:-12,twist:-6},head:{tilt:5,turn:12},
+      armR:{raise:5,elbow:12},armL:{raise:10,fwd:6,elbow:28},wristL:{flex:10},
+      legR:{abd:-5},legL:{fwd:10,abd:2,knee:22,ankle:12}}),
+    'Caminar':bodyPose({hips:{lift:-6,twist:8},torso:{bend:3,twist:-12},
+      armR:{raise:5,fwd:-22,elbow:14},armL:{raise:5,fwd:24,elbow:28},
+      legR:{fwd:24,knee:6,ankle:-12},legL:{fwd:-16,knee:24,ankle:22}}),
+    'Correr':bodyPose({hips:{twist:10},torso:{bend:14,twist:-12},head:{nod:-8},
+      armR:{raise:8,fwd:-40,elbow:95},armL:{raise:8,fwd:55,elbow:100},handL:'Puño',handR:'Puño',
+      legR:{fwd:60,knee:75,ankle:10},legL:{fwd:-28,knee:35,ankle:30}}),
+    'Sentado':bodyPose({hips:{lift:-43},torso:{bend:4},
+      armR:{raise:8,fwd:28,elbow:58},armL:{raise:8,fwd:28,elbow:58},
+      legR:{fwd:90,abd:5,knee:90},legL:{fwd:90,abd:5,knee:90}}),
+    'Cuclillas':bodyPose({hips:{lift:-56,bend:10},torso:{bend:35},head:{nod:-25},
+      armR:{raise:12,fwd:55,elbow:40},armL:{raise:12,fwd:55,elbow:40},
+      legR:{fwd:110,abd:14,knee:130,ankle:-30},legL:{fwd:110,abd:14,knee:130,ankle:-30}}),
+    'Saltar':bodyPose({hips:{lift:15},head:{nod:-12},torso:{bend:-6},
+      armR:{raise:125,elbow:10},armL:{raise:125,elbow:10},handL:'Abierta',handR:'Abierta',
+      legR:{abd:22,knee:12,ankle:40},legL:{abd:22,knee:12,ankle:40}}),
+    'Pose T':bodyPose({armR:{raise:90,elbow:0},armL:{raise:90,elbow:0},handL:'Abierta',handR:'Abierta',
+      legR:{abd:0},legL:{abd:0}}),
+  };
+
+  const m=MODULES.body={
+    id:'body',title:'Maniquí de madera',hint:'clic en una parte para editarla',
+    root,panel:document.getElementById('mod-body'),details:{},
+    presets:BODY_PRESETS,defaultPreset:'De pie',pose:clone(BODY_PRESETS['De pie']),
+    target:new THREE.Vector3(0,FLOOR+STAND_H+4.3,0),dir:new THREE.Vector3(5.5,1.8,12.5).normalize(),dist:22,shadow:[7.5,1],
+    views:{'Frente':[0,0.2,1],'Tres cuartos':[0.75,0.25,0.75],'Perfil':[1,0.1,0],'Dorso':[0,0.2,-1],'Arriba':[0.05,1,0.2],'Abajo':[0.2,-0.4,0.8]},
+    canon:8,fist:{L:0,R:0},
+    apply(){
+      const p=m.pose;
+      pelvis.position.y=PELVIS_Y+p.hips.lift/CM;
+      rod.scale.y=Math.max(0.01,pelvis.position.y-0.15);
+      pelvis.rotation.set(R(p.hips.bend),R(p.hips.twist),R(-p.hips.side));
+      const t=p.torso;
+      waist.rotation.set(R(t.bend*.5),R(t.twist*.5),R(-t.side*.5));chest.rotation.copy(waist.rotation);
+      const h=p.head;
+      neck.rotation.set(R(h.nod*.4),R(h.turn*.4),R(-h.tilt*.4));headJ.rotation.set(R(h.nod*.6),R(h.turn*.6),R(-h.tilt*.6));
+      headJ.scale.setScalar(8/m.canon);
+      for(const s of ['L','R']){
+        const a=p['arm'+s],A=arms[s];
+        A.shoulder.rotation.set(R(-a.fwd),R(-a.twist),R(-a.raise));
+        A.elbow.rotation.x=R(-a.elbow);
+        applyHand(A.hand,p['hand'+s],p['wrist'+s]);
+        const l=p['leg'+s],L=legs[s];
+        L.hip.rotation.set(R(-l.fwd),R(-l.twist),R(-l.abd));
+        L.knee.rotation.x=R(l.knee);
+        L.ankle.rotation.x=R(l.ankle);
+      }
+    },
+    onPreset(){m.fist.L=m.fist.R=0;},
+    exportPose(){return {herramienta:'cuerpo',canon_cabezas:m.canon,lente_mm:cam.lens,pose:m.pose};},
+  };
+  const pose=m.pose;
+  presetChips(m,document.getElementById('b-presets'));
+
+  // canon y soporte
+  const c8=document.getElementById('b-canon8'),c75=document.getElementById('b-canon75');
+  const setCanon=v=>{m.canon=v;pressOnly([c8,c75],v===8?c8:c75);m.apply();};
+  c8.onclick=()=>setCanon(8);c75.onclick=()=>setCanon(7.5);
+  const st=document.getElementById('b-stand');
+  st.onclick=()=>{stand.visible=!stand.visible;st.setAttribute('aria-pressed',stand.visible);};
+  m.onReset=()=>{setCanon(8);stand.visible=true;st.setAttribute('aria-pressed','true');};
+  document.getElementById('b-copy').onclick=copyPose;
+  document.getElementById('b-reset').onclick=resetModule;
+
+  // partes
+  const pc=document.getElementById('b-parts');
+  const sl=(b,part,k,label,min,max,unit)=>slider(b,`b-${part}-${k}`,label,min,max,()=>pose[part][k],v=>pose[part][k]=v,unit);
+  let b=partSection(m,pc,'head','Cabeza');
+  sl(b,'head','nod','Doblar',-40,50);sl(b,'head','tilt','Inclinar',-35,35);sl(b,'head','turn','Girar',-75,75);
+  b=partSection(m,pc,'torso','Torso',true);
+  sl(b,'torso','bend','Doblar',-30,80);sl(b,'torso','side','Inclinar',-35,35);sl(b,'torso','twist','Girar',-60,60);
+  b=partSection(m,pc,'hips','Cadera');
+  sl(b,'hips','lift','Altura',-100,40,' cm');sl(b,'hips','bend','Doblar',-30,45);sl(b,'hips','side','Inclinar',-20,20);sl(b,'hips','twist','Girar',-45,45);
+  const SIDE={L:'izquierdo',R:'derecho'},SIDE_F={L:'izquierda',R:'derecha'};
+  for(const s of ['L','R']){
+    b=partSection(m,pc,'arm'+s,'Brazo '+SIDE[s]);
+    sl(b,'arm'+s,'raise','Levantar',-10,180);sl(b,'arm'+s,'fwd','Adelante',-60,180);sl(b,'arm'+s,'twist','Rotar',-80,90);sl(b,'arm'+s,'elbow','Codo',0,145);
+  }
+  for(const s of ['L','R']){
+    b=partSection(m,pc,'hand'+s,'Mano '+SIDE_F[s]);
+    const w='wrist'+s;
+    sl(b,w,'flex','Doblar',-70,80);sl(b,w,'dev','Inclinar',-25,35);sl(b,w,'twist','Girar',-90,90);
+    slider(b,`b-fist-${s}`,'Cerrar',0,100,()=>m.fist[s],v=>{m.fist[s]=v;applyFist(pose['hand'+s],v/100);syncAll();},'%');
+    const hc=document.createElement('div');hc.className='chips';hc.style.marginTop='6px';b.appendChild(hc);
+    const hb=[];
+    for(const name of Object.keys(HAND_PRESETS))hb.push(chip(hc,name,e=>{
+      const to=clone(pose);to['hand'+s]=fingersOf(name);
+      m.fist[s]=0;tweenPose(m,to);m.clearMark();
+    }));
+  }
+  for(const s of ['L','R']){
+    b=partSection(m,pc,'leg'+s,'Pierna '+SIDE_F[s]);
+    const k='leg'+s;
+    sl(b,k,'fwd','Adelante',-40,120);sl(b,k,'abd','Abrir',-25,70);sl(b,k,'twist','Rotar',-40,50);sl(b,k,'knee','Rodilla',0,150);sl(b,k,'ankle','Tobillo',-30,50);
+  }
+  m.apply();
+})();
+
+/* ---------- Cambio de módulo ---------- */
+const titleEl=document.getElementById('title'),hintEl=document.getElementById('hint');
+const HINT='Arrastra para girar · rueda o pellizco para acercar · clic derecho para mover · ';
+const modeBtns=[...document.querySelectorAll('[data-mod]')];
+function setModule(id){
+  if(M===MODULES[id])return;
+  setHover(null);poseTween=null;camTween=null;
+  if(M)M.cam={pos:camera.position.clone(),target:controls.target.clone()};
+  for(const k in MODULES){MODULES[k].root.visible=false;MODULES[k].panel.hidden=true;}
+  M=MODULES[id];
+  M.root.visible=true;M.panel.hidden=false;
+  titleEl.textContent=M.title;document.title=M.title;hintEl.textContent=HINT+M.hint;
+  pressOnly(modeBtns,modeBtns.find(b=>b.dataset.mod===id));
+  setShadowBox(...M.shadow);
+  if(M.cam){controls.target.copy(M.cam.target);camera.position.copy(M.cam.pos);}
+  else{controls.target.copy(M.target);camera.position.copy(M.target).addScaledVector(M.dir,M.dist);}
+  applyLens();
+  history.replaceState(null,'',id==='body'?'#cuerpo':location.pathname+location.search);
+}
+modeBtns.forEach(b=>b.addEventListener('click',()=>setModule(b.dataset.mod)));
+
+/* ---------- Clic y hover sobre las partes ---------- */
+const raycaster=new THREE.Raycaster(),ndc=new THREE.Vector2();
+function partAt(e){
+  const r=canvas.getBoundingClientRect();
+  ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+  raycaster.setFromCamera(ndc,camera);
+  const hit=raycaster.intersectObject(M.root,true)[0];
+  const part=hit&&hit.object.userData.part;
+  return part&&M.details[part]?part:null;
+}
+let hovered=null;const HOVER_TINT=new THREE.Color(0xd2a878);
+function setHover(n){
+  if(n===hovered)return;
+  const paint=(name,on)=>name&&M.root.traverse(o=>{
+    if(!o.isMesh||o.userData.part!==name)return;
+    const c=o.material.color;
+    if(!o.userData.baseColor)o.userData.baseColor=c.clone();
+    c.copy(o.userData.baseColor);if(on)c.multiply(HOVER_TINT);
+  });
+  paint(hovered,false);paint(n,true);hovered=n;
+  canvas.classList.toggle('over-part',!!n);
+}
+let down=null;
+canvas.addEventListener('pointerdown',e=>{down=e.button===0?{x:e.clientX,y:e.clientY}:null;});
+canvas.addEventListener('pointerup',e=>{
+  if(!down)return;
+  const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;
+  if(moved>5)return; // fue un arrastre de cámara, no un clic
+  const n=partAt(e);if(n)openPart(n);
+});
+canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&!e.buttons)setHover(partAt(e));});
+canvas.addEventListener('pointerleave',()=>setHover(null));
+
+/* ---------- Vistas y cámara ---------- */
+const vc=document.getElementById('views');
+for(const name of VIEW_NAMES)chip(vc,name,()=>setView(name));
+const cc=document.getElementById('camera');
+slider(cc,'c-lens','Lente',18,135,()=>cam.lens,v=>{cam.lens=v;applyLens();},' mm');
+slider(cc,'c-light','Luz giro',-180,180,()=>cam.light,v=>{cam.light=v;applyLight();});
+slider(cc,'c-height','Luz altura',5,85,()=>cam.height,v=>{cam.height=v;applyLight();});
+
+/* ---------- Tema ---------- */
+function applyTheme(){
+  const c=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e8e6e2';
+  scene.background=new THREE.Color(c);
+  const dark=new THREE.Color(c).getHSL({}).l<0.4;
+  ground.material.opacity=dark?0.35:0.18;
+}
+applyTheme();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- Loop ---------- */
+const readout=document.getElementById('readout');
+function resize(){
+  const r=canvas.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas.parentElement);
+
+setModule(location.hash==='#cuerpo'?'body':'hand');
+syncAll();applyLight();resize();
+
+function loop(now){
+  if(poseTween)poseTween(now);
+  if(camTween)camTween(now);
+  controls.update();
+  renderer.render(scene,camera);
+  const off=camera.position.clone().sub(controls.target);
+  const az=Math.round(Math.atan2(off.x,off.z)/D),el=Math.round(Math.asin(off.y/off.length())/D);
+  readout.textContent=`${cam.lens} mm · azimut ${az}° · elevación ${el}°`;
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

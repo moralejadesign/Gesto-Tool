@@ -155,9 +155,71 @@ details.part.flash{animation:flash .9s ease-out}
 .ink-sel span{font-weight:500}
 [hidden]{display:none!important}
 
+/* onboarding: siempre oscuro, como el marco */
+.ob{position:fixed;inset:0;z-index:100;background:#0b0b0c;color:#f2f2f3;display:flex;flex-direction:column;font-family:var(--body);overflow:auto;transition:opacity .35s}
+.ob.leaving{opacity:0}
+.ob-top{position:relative;display:flex;justify-content:flex-end;align-items:center;height:64px;padding:0 24px;flex:none}
+.ob-logo{position:absolute;left:50%;top:50%;width:36px;height:36px;transform:translate(-50%,-50%);background:#f2f2f3;-webkit-mask:url("assets/line%20alphabet/g.png") center/contain no-repeat;mask:url("assets/line%20alphabet/g.png") center/contain no-repeat}
+.ob-link{border:0;background:transparent;color:#cfcfd4;font-size:13px;padding:8px 12px;border-radius:999px;cursor:pointer}
+.ob-link:hover{color:#fff;background:#1c1c1f}
+.ob-skip{font-size:12.5px;color:#8d8d95}
+.ob-main{flex:1;display:grid;place-items:center;padding:12px 24px 24px}
+.ob-step{width:min(100%,800px);animation:obIn .45s cubic-bezier(.2,.7,.2,1)}
+.ob-step[hidden]{display:none}
+.ob-step:focus{outline:none}
+@keyframes obIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ob-center,.ob-intro{text-align:center}
+.ob-intro{width:min(100%,880px)}
+.ob-title{font-family:var(--display);font-weight:500;font-size:26px;letter-spacing:-.015em;margin:0 0 6px}
+.ob-sub{color:#8d8d95;font-size:13.5px;margin:0 0 20px}
+.ob-video{border-radius:var(--radius);overflow:hidden;aspect-ratio:1000/562;background:#141416 url("assets/og-image.jpg") center/cover;margin-bottom:26px;box-shadow:0 30px 80px -30px rgba(0,0,0,.8)}
+.ob-video video{width:100%;height:100%;object-fit:cover;display:block}
+.ob-intro .ob-title{font-size:30px}
+.ob-actions{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:22px}
+.ob-primary{display:inline-flex;align-items:center;gap:8px;border:0;background:#f2f2f3;color:#111113;font-size:13.5px;font-weight:500;padding:10px 18px;border-radius:999px;cursor:pointer}
+.ob-primary:hover{background:#fff}
+.ob-primary svg,.ob-link svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ob :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.ob-grid{display:grid;gap:8px}
+.ob-card{position:relative;text-align:left;border:1px solid #232327;background:#121214;color:#f2f2f3;border-radius:16px;padding:16px 18px;cursor:pointer;transition:border-color .15s,background .15s}
+.ob-card:hover{border-color:#3a3a40;background:#161618}
+.ob-card svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:#b5b5bc}
+.ob-starts{gap:10px;text-align:left}
+.ob-start{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.ob-start .ob-cover{position:relative;aspect-ratio:16/9;background:#1c1c1f center/cover no-repeat}
+.ob-start .ob-badge{position:absolute;left:12px;bottom:12px;width:38px;height:38px;border-radius:11px;background:rgba(18,18,20,.72);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);display:grid;place-items:center}
+.ob-start .ob-body{display:block;padding:14px 18px 18px}
+.ob-start h3{font-weight:500;font-size:15px;margin:0 0 4px}
+.ob-start p{display:block;color:#8d8d95;font-size:13px;margin:0 0 12px;line-height:1.45}
+.ob-start .ob-inc{display:block;border-top:1px solid #232327;padding-top:10px;font-size:12px;color:#8d8d95}
+.ob-start ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
+.ob-start li{font-size:13px;color:#cfcfd4;display:flex;gap:8px;align-items:center}
+.ob-start li::before{content:"";width:7px;height:4px;border:solid #8d8d95;border-width:0 0 1.5px 1.5px;transform:translateY(-2px) rotate(-45deg)}
+.ob-dots{display:flex;justify-content:center;gap:6px;padding:0 0 26px;flex:none}
+.ob-show{width:min(100%,920px)}
+.ob-copy{min-height:74px}
+.ob-copy.swap{animation:obIn .45s cubic-bezier(.2,.7,.2,1)}
+.ob-media{position:relative;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;background:#161618;box-shadow:0 30px 80px -30px rgba(0,0,0,.8)}
+.ob-media canvas{display:block;width:100%;height:100%}
+.ob-tag{position:absolute;left:16px;top:16px;font-family:var(--mono);font-size:12px;color:#f2f2f3;background:rgba(12,12,14,.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:5px 11px}
+.ob-tag:empty{display:none}
+.ob-starts.two{grid-template-columns:repeat(2,minmax(0,1fr));max-width:680px;margin:0 auto}
+.ob-dots button{width:5px;height:5px;padding:0;border:0;border-radius:999px;background:#3a3a40;cursor:pointer;position:relative;overflow:hidden;transition:width .3s}
+.ob-dots button.on{width:26px;background:#3a3a40}
+.ob-dots button.on::after{content:"";position:absolute;inset:0;width:var(--p,100%);background:#f2f2f3;border-radius:inherit}
+@media (max-width:760px){
+  .ob-starts,.ob-starts.two{grid-template-columns:1fr}
+  .ob-copy{min-height:96px}
+  .ob-title{font-size:22px}.ob-intro .ob-title{font-size:24px}
+}
+@media (prefers-reduced-motion: reduce){.ob-step{animation:none}.ob{transition:none}}
+
 @media (max-width:760px){
   body{overflow:auto}
-  .app{grid-template-columns:1fr;grid-template-rows:auto 62vh auto;height:auto;padding:10px}
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 62vh auto;height:auto;padding:10px}
+  .rail{min-width:0}
+  .ibtn{width:40px;height:40px;flex:none}
   .rail{flex-direction:row}
   .logo{width:52px;height:52px}
   .rail-pill{flex-direction:row;width:auto;flex:1;height:52px;padding:0 6px;justify-content:flex-start;overflow-x:auto}
@@ -195,6 +257,10 @@ details.part.flash{animation:flash .9s ease-out}
         <span class="tip">Restablecer</span>
       </button>
       <span class="rail-spacer"></span>
+      <button class="ibtn" id="act-intro" aria-label="Ver introducción">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></svg>
+        <span class="tip">Ver introducción</span>
+      </button>
       <button class="ibtn" id="act-theme" aria-label="Cambiar tema">
         <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
         <span class="tip">Tema claro u oscuro</span>
@@ -310,6 +376,37 @@ details.part.flash{animation:flash .9s ease-out}
     </section>
     </div>
   </aside>
+</div>
+
+<div class="ob" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="ob-title" hidden>
+  <header class="ob-top">
+    <span class="ob-logo" aria-hidden="true"></span>
+    <button class="ob-link ob-skip" id="ob-skip">Omitir por ahora</button>
+  </header>
+
+  <main class="ob-main">
+    <section class="ob-step ob-intro" data-step="0">
+      <div class="ob-video"><video id="ob-video" src="assets/intro.mp4" poster="assets/og-image.jpg" muted loop playsinline preload="auto" aria-label="Mano de madera tatuada que cambia de gesto entre flores"></video></div>
+      <h1 class="ob-title" id="ob-title">Maniquíes de madera para dibujar</h1>
+      <p class="ob-sub">Posa una mano o un cuerpo completo, ajusta el lente y la luz, y úsalos como referencia.</p>
+      <div class="ob-actions"><button class="ob-primary" data-next>Comenzar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    </section>
+
+    <section class="ob-step ob-center ob-show" data-step="show" hidden>
+      <div class="ob-copy" id="ob-copy"><h2 class="ob-title" id="ob-show-title"></h2><p class="ob-sub" id="ob-show-sub"></p></div>
+      <div class="ob-media" id="ob-media"><canvas id="ob-canvas" aria-hidden="true"></canvas><span class="ob-tag" id="ob-tag"></span></div>
+      <div class="ob-actions"><button class="ob-link" data-back>Atrás</button><button class="ob-primary" data-next>Siguiente <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    </section>
+
+    <section class="ob-step ob-center" data-step="end" hidden>
+      <h2 class="ob-title">Listo para dibujar</h2>
+      <p class="ob-sub">Elige por dónde empezar. Puedes cambiar de herramienta cuando quieras.</p>
+      <div class="ob-grid ob-starts" id="ob-starts"></div>
+      <div class="ob-actions"><button class="ob-link" data-back>Atrás</button><button class="ob-link" id="ob-explore">Explorar por mi cuenta</button></div>
+    </section>
+  </main>
+
+  <nav class="ob-dots" id="ob-dots" aria-label="Progreso"></nav>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
@@ -1296,6 +1393,179 @@ slider(cc,'c-lens','Lente',18,135,()=>cam.lens,v=>{cam.lens=v;applyLens();},' mm
 slider(cc,'c-light','Luz giro',-180,180,()=>cam.light,v=>{cam.light=v;applyLight();},'°',()=>{});
 slider(cc,'c-height','Luz altura',5,85,()=>cam.height,v=>{cam.height=v;applyLight();},'°',()=>{});
 
+/* ---------- Onboarding ---------- */
+/* Primera visita: el video y luego una muestra en vivo de lo que hace la herramienta, con un renderer propio.
+   Al cerrar, todo (poses, luz, tatuajes, módulo visible) vuelve como estaba */
+const ob=document.getElementById('onboarding'),obVideo=document.getElementById('ob-video');
+const obIntro=ob.querySelector('[data-step="0"]'),obShow=ob.querySelector('[data-step="show"]'),obEnd=ob.querySelector('[data-step="end"]');
+[obIntro,obShow,obEnd].forEach(s=>s.tabIndex=-1);
+const obTitle=document.getElementById('ob-show-title'),obSub=document.getElementById('ob-show-sub'),obCopy=document.getElementById('ob-copy'),obTag=document.getElementById('ob-tag');
+const obCanvas=document.getElementById('ob-canvas'),obMedia=document.getElementById('ob-media');
+const HAND=MODULES.hand,BODY=MODULES.body;
+const easeIO=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+/* recorre presets: queda quieto `hold` s y pasa al siguiente en `tween` s. Devuelve el nombre que se ve */
+function cycle(m,names,t,tween=.8,hold=.8){
+  const per=tween+hold,i=Math.floor(t/per)%names.length,loc=t%per;
+  const e=loc<hold?0:easeIO((loc-hold)/tween),a=m.presets[names[i]],b=m.presets[names[(i+1)%names.length]];
+  lerpInto(m.pose,a,b,e);m.apply();return names[e<.5?i:(i+1)%names.length];
+}
+const obCam=new THREE.PerspectiveCamera(30,16/9,0.1,200);
+function shoot(m,azDeg,elDeg,lens,zoom,up){
+  const t=m.target.clone();t.y+=up||0;const a=R(azDeg),e=R(elDeg),d=m.dist*lens/50*(zoom||1);
+  obCam.fov=fovFromLens(lens);obCam.updateProjectionMatrix();
+  obCam.position.set(t.x+Math.sin(a)*Math.cos(e)*d,t.y+Math.sin(e)*d,t.z+Math.cos(a)*Math.cos(e)*d);obCam.lookAt(t);
+}
+function lightAt(azDeg,elDeg){const a=R(azDeg),e=R(elDeg);key.position.set(Math.sin(a)*Math.cos(e)*12,Math.sin(e)*12,Math.cos(a)*Math.cos(e)*12);}
+function only(m){for(const k in MODULES)MODULES[k].root.visible=MODULES[k]===m;setShadowBox(...m.shadow);}
+/* pose del lente: brazos en cruz vistos en tres cuartos desde abajo; un brazo viene hacia la cámara y el otro se aleja */
+const LENS_POSE=(()=>{const p=clone(BODY.presets['Pose T']);p.head.turn=20;p.head.nod=-6;return p;})();
+/* tatuajes de muestra en el dorso: rosa en la palma, LOVE en los nudillos, golondrina en la base */
+let demoInk=[];
+async function makeDemoInk(){
+  const keys=await Promise.all(['l','o','v','e'].map(ch=>buildWord('line',ch)));
+  lerpInto(HAND.pose,HAND.pose,HAND.presets['Abierta'],1);HAND.apply();HAND.root.updateMatrixWorld(true);
+  const rc=new THREE.Raycaster(),dir=new THREE.Vector3(0,0,1);
+  const hitAt=(x,y)=>{rc.set(HAND.root.localToWorld(new THREE.Vector3(x,y,-6)),dir);return rc.intersectObject(HAND.root,true).find(h=>h.face&&!h.object.userData.tattoo&&!h.object.userData.noTattoo);};
+  const order=HAND.root.scale.x<0?[...keys].reverse():keys;   // de izquierda a derecha visto desde atrás
+  const specs=[['rosa01',0,0.95,5.5],...FINGER_NAMES.map((n,i)=>[order[i],FINGERS[n].x,FINGERS[n].y+FINGERS[n].L[0]*.5,1.15]),['pajarito',0,-1.7,5]];
+  for(const [file,x,y,cm] of specs){
+    const h=hitAt(x,y);if(!h)continue;
+    const t={module:HAND,file,cm,rot:0,opacity:92,mesh:null};aimTattoo(t,h);placeTattoo(t);t.mesh.material.opacity=0;demoInk.push(t);
+  }
+  pendingPlace.clear();
+}
+function clearDemoInk(){demoInk.forEach(t=>{t.mesh.removeFromParent();t.mesh.geometry.dispose();t.mesh.material.dispose();});demoInk=[];}
+const SLIDES=[
+  {title:'Posa cada articulación',sub:'Dedos, muñeca, brazos y piernas con límites anatómicos, o una pose lista para empezar.',dur:8,
+   frame(t){only(HAND);lightAt(35,55);const n=cycle(HAND,['Abierta','Rock','Paz','Puño','Señalar','OK','Garra'],t,.75,.75);shoot(HAND,22+10*Math.sin(t*.4),14,50,.82,.9);return n;}},
+  {title:'Un maniquí completo',sub:'Canon de 8 cabezas sobre su soporte, con manos articuladas en cada muñeca.',dur:8,
+   frame(t){only(BODY);lightAt(35,55);const n=cycle(BODY,['De pie','Caminar','Correr','Saltar','Contrapposto'],t,.9,.75);shoot(BODY,30+t*14,9,50,.96,.3);return n;}},
+  {title:'El lente cambia el escorzo',sub:'Como una cámara real: a 24 mm exagera la perspectiva y a 135 mm la aplana. El tamaño no cambia.',dur:8,
+   frame(t){only(BODY);lightAt(40,50);lerpInto(BODY.pose,BODY.pose,LENS_POSE,1);BODY.apply();
+     const s=.5-.5*Math.cos(t*Math.PI*2/6),lens=Math.round(Math.exp(Math.log(18)+(Math.log(135)-Math.log(18))*s));
+     shoot(BODY,58,-6,lens,.8,1.2);return lens+' mm';}},
+  {title:'Luz que puedes mover',sub:'Gira y sube la luz principal para estudiar volumen, sombra propia y sombra proyectada.',dur:8,
+   frame(t){only(HAND);lerpInto(HAND.pose,HAND.pose,HAND.presets['Garra'],1);HAND.apply();
+     const az=Math.round((t*50)%360),el=Math.round(32+22*Math.sin(t*.8));lightAt(az,el);shoot(HAND,28,16,50,.86,.6);return `luz ${az}° · ${el}°`;}},
+  {title:'Tatúa la madera',sub:'Arrastra diseños o escribe palabras. La tinta respeta la veta y sigue cada pose.',dur:9,
+   frame(t){only(HAND);lightAt(200,50);
+     demoInk.forEach((d,i)=>{d.mesh.material.opacity=Math.min(1,Math.max(0,(t-.5-i*.45)/.4))*.92;});
+     if(t<3.6){lerpInto(HAND.pose,HAND.pose,HAND.presets['Abierta'],1);HAND.apply();}else cycle(HAND,['Abierta','Puño'],t-3.6,.8,.9);
+     shoot(HAND,180+16*Math.sin(t*.5),14,50,.84,.8);return '';},
+   async enter(){await makeDemoInk();}, leave(){clearDemoInk();}},
+];
+/* renderer de la muestra */
+const obR=new THREE.WebGLRenderer({canvas:obCanvas,antialias:true});
+obR.setPixelRatio(Math.min(window.devicePixelRatio,2));obR.outputEncoding=THREE.sRGBEncoding;obR.toneMapping=THREE.ACESFilmicToneMapping;obR.toneMappingExposure=0.95;
+obR.shadowMap.enabled=true;obR.shadowMap.type=THREE.PCFSoftShadowMap;
+new ResizeObserver(()=>{const r=obMedia.getBoundingClientRect();if(r.width){obR.setSize(r.width,r.height,false);obCam.aspect=r.width/r.height;obCam.updateProjectionMatrix();}}).observe(obMedia);
+
+const obDots=document.getElementById('ob-dots');
+const STEPS=['intro',...SLIDES.map((_,i)=>i),'end'];
+STEPS.forEach((_,i)=>{const d=document.createElement('button');d.setAttribute('aria-label',`Paso ${i+1} de ${STEPS.length}`);d.onclick=()=>obGo(i);obDots.appendChild(d);});
+let obStep=0,slideStart=0,paused=false,pausedAt=0,obSnap=null;
+async function obGo(n){
+  const prev=STEPS[obStep];if(typeof prev==='number'&&SLIDES[prev].leave)SLIDES[prev].leave();
+  obStep=n;const s=STEPS[n];
+  obIntro.hidden=s!=='intro';obShow.hidden=typeof s!=='number';obEnd.hidden=s!=='end';
+  [...obDots.children].forEach((d,i)=>{d.classList.toggle('on',i===n);d.style.setProperty('--p',typeof s==='number'&&!reduceMotion?'0%':'100%');});
+  if(s==='intro'){try{obVideo.currentTime=0;obVideo.play().catch(()=>{});}catch(e){}}else obVideo.pause();
+  if(typeof s==='number'){
+    const sl=SLIDES[s];obTitle.textContent=sl.title;obSub.textContent=sl.sub;
+    obCopy.classList.remove('swap');void obCopy.offsetWidth;obCopy.classList.add('swap');
+    if(sl.enter)await sl.enter();
+    slideStart=performance.now();paused=false;
+  }
+  (s==='intro'?obIntro:typeof s==='number'?obShow:obEnd).focus({preventScroll:true});
+}
+/* se llama desde el loop mientras el onboarding está abierto */
+function obTick(now){
+  const s=STEPS[obStep];if(typeof s!=='number')return;
+  const sl=SLIDES[s],t=reduceMotion?1.2:Math.max(0,((paused?pausedAt:now)-slideStart)/1000);   // el timestamp del frame puede ser anterior al inicio
+  obTag.textContent=sl.frame(t);
+  obR.render(scene,obCam);
+  if(!reduceMotion){
+    const dot=obDots.children[obStep];dot.style.setProperty('--p',Math.min(100,t/sl.dur*100)+'%');
+    if(!paused&&t>=sl.dur)obGo(obStep+1);   // avanza solo, como una historia
+  }
+}
+obMedia.addEventListener('pointerenter',()=>{if(!paused){paused=true;pausedAt=performance.now();}});
+obMedia.addEventListener('pointerleave',()=>{if(paused){slideStart+=performance.now()-pausedAt;paused=false;}});
+ob.addEventListener('click',e=>{
+  if(e.target.closest('[data-next]'))obGo(Math.min(STEPS.length-1,obStep+1));
+  else if(e.target.closest('[data-back]'))obGo(Math.max(0,obStep-1));
+});
+const startsEl=document.getElementById('ob-starts');startsEl.classList.add('two');
+for(const s of [
+  {id:'hand',title:'Mano',text:'Dedos articulados para estudiar gestos de cerca',inc:['9 poses','Dedos y muñeca','Tatuajes y letras']},
+  {id:'body',title:'Cuerpo',text:'Maniquí completo sobre su soporte, con manos articuladas',inc:['8 poses','Canon de 8 o 7.5 cabezas','Altura de la cadera en cm']},
+]){
+  const b=document.createElement('button');b.className='ob-card ob-start';
+  b.innerHTML=`<span class="ob-cover" data-cover="${s.id}"><span class="ob-badge">${document.querySelector(`[data-mod=${s.id}] svg`).outerHTML}</span></span>
+    <span class="ob-body"><h3>${s.title}</h3><p>${s.text}</p><span class="ob-inc">Incluye<ul>${s.inc.map(i=>`<li>${i}</li>`).join('')}</ul></span></span>`;
+  b.onclick=()=>closeOnboarding(s.id);startsEl.appendChild(b);
+}
+const appEl=document.querySelector('.app');
+function openOnboarding(){
+  renderCovers();
+  // foto del estado actual para devolverlo al cerrar
+  obSnap={poses:{hand:clone(HAND.pose),body:clone(BODY.pose)},bg:scene.background,ground:ground.material.opacity,ink:[]};
+  for(const k in MODULES)MODULES[k].tattoos.forEach(t=>{if(t.mesh){obSnap.ink.push([t.mesh,t.mesh.visible]);t.mesh.visible=false;}});
+  setHover(null);capturing=true;updateSelHelper();
+  scene.background=new THREE.Color(0x161618);ground.material.opacity=0.45;
+  ob.hidden=false;ob.classList.remove('leaving');appEl.inert=true;obGo(0);
+}
+function closeOnboarding(startWith){
+  try{localStorage.setItem('onboarded','1');}catch(e){}
+  const s=STEPS[obStep];if(typeof s==='number'&&SLIDES[s].leave)SLIDES[s].leave();
+  clearDemoInk();obVideo.pause();
+  for(const k of ['hand','body']){const m=MODULES[k];lerpInto(m.pose,m.pose,obSnap.poses[k],1);m.apply();}
+  obSnap.ink.forEach(([mesh,v])=>mesh.visible=v);
+  scene.background=obSnap.bg;ground.material.opacity=obSnap.ground;applyTheme();
+  for(const k in MODULES)MODULES[k].root.visible=MODULES[k]===M;
+  setShadowBox(...M.shadow);applyLight();capturing=false;
+  if(startWith)setModule(startWith);
+  appEl.inert=false;ob.classList.add('leaving');obStep=0;
+  setTimeout(()=>{ob.hidden=true;},reduceMotion?0:350);
+}
+document.getElementById('ob-skip').onclick=()=>closeOnboarding(null);
+document.getElementById('ob-explore').onclick=()=>closeOnboarding(null);
+ob.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeOnboarding(null);
+  else if(e.key==='ArrowRight')obGo(Math.min(STEPS.length-1,obStep+1));
+  else if(e.key==='ArrowLeft')obGo(Math.max(0,obStep-1));
+});
+document.getElementById('act-intro').onclick=openOnboarding;
+/* portadas del paso final: render de cada módulo sobre fondo oscuro */
+let coversDone=false;
+function renderCovers(){
+  if(coversDone)return;coversDone=true;
+  const pr=renderer.getPixelRatio(),size=renderer.getSize(new THREE.Vector2());
+  const pos=camera.position.clone(),fov=camera.fov,aspect=camera.aspect,bg=scene.background,op=ground.material.opacity;
+  setHover(null);capturing=true;updateSelHelper();
+  const W=640,H=360;renderer.setPixelRatio(1);renderer.setSize(W,H,false);
+  camera.aspect=W/H;camera.fov=fovFromLens(50);camera.updateProjectionMatrix();
+  scene.background=new THREE.Color(0x1c1c1f);ground.material.opacity=0.45;
+  const cover={hand:['Rock',[3,1.2,12.5],0.7,1.0],body:['Contrapposto',[5.5,0.9,12.5],0.76,0.9]};   // preset, dirección, zoom, subir el centro
+  for(const k in cover){
+    const m=MODULES[k],[preset,dir,zoom,up]=cover[k];
+    for(const j in MODULES)MODULES[j].root.visible=j===k;
+    setShadowBox(...m.shadow);
+    const saved=clone(m.pose);lerpInto(m.pose,m.pose,m.presets[preset],1);m.apply();
+    const t=m.target.clone().add(new THREE.Vector3(0,up,0));
+    camera.position.copy(t).addScaledVector(new THREE.Vector3(...dir).normalize(),m.dist*zoom);camera.lookAt(t);
+    renderer.render(scene,camera);
+    ob.querySelector(`[data-cover="${k}"]`).style.backgroundImage=`url(${canvas.toDataURL('image/jpeg',.88)})`;
+    lerpInto(m.pose,m.pose,saved,1);m.apply();
+  }
+  scene.background=bg;ground.material.opacity=op;
+  for(const j in MODULES)MODULES[j].root.visible=MODULES[j]===M;
+  setShadowBox(...M.shadow);
+  camera.position.copy(pos);camera.fov=fov;camera.aspect=aspect;camera.updateProjectionMatrix();camera.lookAt(controls.target);
+  renderer.setPixelRatio(pr);renderer.setSize(size.x,size.y,false);capturing=false;
+}
+let firstVisit=true;try{firstVisit=!localStorage.getItem('onboarded');}catch(e){}
+
 /* ---------- Tema ---------- */
 function applyTheme(){
   const c=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e8e6e2';
@@ -1318,6 +1588,7 @@ new ResizeObserver(resize).observe(canvas.parentElement);
 
 setModule(location.hash==='#cuerpo'?'body':'hand');
 syncAll();applyLight();resize();makeThumbs();
+if(firstVisit)openOnboarding();
 
 function loop(now){
   if(poseTween)poseTween(now);
@@ -1325,7 +1596,7 @@ function loop(now){
   updateSelHelper();
   if(camTween)camTween(now);
   controls.update();
-  renderer.render(scene,camera);
+  if(!ob.hidden)obTick(now);else renderer.render(scene,camera);
   const off=camera.position.clone().sub(controls.target);
   const az=Math.round(Math.atan2(off.x,off.z)/D),el=Math.round(Math.asin(off.y/off.length())/D);
   readout.textContent=`${cam.lens} mm · azimut ${az}° · elevación ${el}°`;

@@ -6,6 +6,7 @@ Herramienta web para posar maniquíes de dibujo de madera en 3D y usarlos como r
 
 - Un solo archivo: `index.html` (HTML + CSS + JS inline, sin build).
 - Three.js r147 en build UMD desde jsDelivr, más `OrbitControls` desde `examples/js` (la última versión con UMD es r147; desde r148 hay que usar módulos ES).
+- `assets/intro.mp4` es el video del onboarding.
 - `assets/` guarda los diseños de tatuaje (PNG con fondo transparente). `assets/alphabet/` es el alfabeto a color (a-z) y `assets/line alphabet/` el de línea (a-z, 0-9). La G del logo es `line alphabet/g.png` usada como máscara CSS; `favicon.png` y `apple-touch-icon.png` son esa G en blanco sobre un círculo casi negro. `og-image.jpg` (1200×628) es la imagen para compartir; las etiquetas `og:` y `twitter:` la apuntan con ruta relativa y hay que cambiarla a URL absoluta cuando el sitio tenga dominio.
 - Hay que servir la carpeta (`npx serve .`): abierto como `file://`, el navegador bloquea las texturas de `assets/` y los tatuajes no cargan.
 
@@ -80,6 +81,14 @@ figure
 - El decal se imprime en todas las piezas hermanas de la pieza bajo el puntero (mismo grupo padre: falange + bisagra, pecho + rótula) y cuelga de ese grupo, así no se corta en una bisagra. `keepFacing()` descarta los triángulos que miran a más de ~72° de la proyección: evita manchas estiradas en los costados y que el diseño atraviese piezas delgadas.
 - Mientras se arrastra un tatuaje nuevo, su tamaño inicial sigue a la pieza bajo el puntero (`defaultCm`): 1.2 cm una letra en un dedo, 2 cm un diseño en un dedo, 4 cm en la mano, 10 cm en el cuerpo; las palabras arrancan más anchas.
 - Un tatuaje no cruza articulaciones que se mueven por separado (por ejemplo, de la palma a un dedo): se corta en el borde del grupo.
+
+## Onboarding
+
+- Es una muestra de lo que hace la herramienta, no un cuestionario. Se abre en la primera visita (`localStorage.onboarded`) y desde "Ver introducción" en el riel. Pantalla completa siempre oscura: G centrada arriba, "Omitir por ahora" arriba a la derecha y puntos de progreso abajo (también navegan). Mientras está abierto, `.app` queda `inert`. Esc cierra; flechas izquierda y derecha cambian de paso.
+- Pasos: el video (`assets/intro.mp4`, 5 s en loop) con "Comenzar", cinco diapositivas en vivo (`SLIDES`) y un cierre "Listo para dibujar" con tarjetas Mano y Cuerpo (portadas de `renderCovers()`) y "Explorar por mi cuenta".
+- Las diapositivas se dibujan en vivo con un renderer propio (`obR`, cámara `obCam`) sobre la misma escena; el loop principal deja de dibujar mientras el onboarding está abierto. Cada diapositiva tiene `frame(t)` que pone pose, cámara y luz para el segundo `t` y devuelve la etiqueta de la esquina: poses de la mano, el cuerpo girando con poses, el lente de 18 a 135 mm sobre una Pose T en tres cuartos desde abajo, la luz dando la vuelta, y tatuajes de muestra (rosa, LOVE, golondrina) que aparecen y siguen al puño.
+- Avanzan solas como historias (el punto activo se llena); pasar el mouse sobre la imagen pausa. Con `prefers-reduced-motion` no hay avance automático ni movimiento.
+- `openOnboarding()` guarda poses, tatuajes visibles, fondo y sombra; `closeOnboarding()` lo devuelve todo y quita los tatuajes de muestra, así que cerrar deja la escena idéntica.
 
 ### Madera
 La textura es procedural (`makeWoodCanvas`): ruido 3D de valor con fbm, muestreado en coordenadas cilíndricas para que no haya costura alrededor del torno. Hay 4 variantes de veta y cada pieza clona una con offset aleatorio, para que parezcan talladas por separado. Las bisagras llevan un tinte un poco más oscuro (`pinTint`). Material: `MeshStandardMaterial` con `bumpMap` sobre la misma textura y roughness 0.62.

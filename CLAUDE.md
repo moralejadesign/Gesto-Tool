@@ -51,7 +51,7 @@ Todo el estado está en grados, en `M.pose`. `M.apply()` (que para la mano llama
 Los rangos de cada articulación están definidos en los sliders y son los límites anatómicos. Si cambias uno, revisa que ninguna falange se doble al revés.
 
 ### Presets
-`HAND_PRESETS` guarda poses completas (Abierta, Relajada, Puño, Señalar, Paz, OK, Garra, Pinza). `M.goPreset()` (vía `tweenPose()`) interpola de la pose actual a la nueva en 450 ms (en 0 ms si el usuario tiene `prefers-reduced-motion`). "Copiar pose" exporta el mismo esquema en JSON, así que cualquier pose copiada se puede pegar como preset nuevo.
+`HAND_PRESETS` guarda poses completas (Abierta, Relajada, Puño, Señalar, Paz, Rock, Corazón, OK, Garra, Pinza). `M.goPreset()` (vía `tweenPose()`) interpola de la pose actual a la nueva en 450 ms (en 0 ms si el usuario tiene `prefers-reduced-motion`). "Copiar pose" exporta el mismo esquema en JSON, así que cualquier pose copiada se puede pegar como preset nuevo.
 
 ## Arquitectura del cuerpo
 

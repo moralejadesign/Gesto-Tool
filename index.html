@@ -615,6 +615,7 @@ const HAND_PRESETS={
   'Señalar':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:0,pip:2,dip:0,spr:2},middle:{mcp:88,pip:102,dip:60,spr:0},ring:{mcp:90,pip:100,dip:60,spr:0},pinky:{mcp:88,pip:98,dip:58,spr:0}},
   'Paz':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:0,pip:0,dip:0,spr:12},middle:{mcp:0,pip:0,dip:0,spr:-10},ring:{mcp:88,pip:100,dip:60,spr:0},pinky:{mcp:86,pip:98,dip:58,spr:0}},
   'Rock':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:2,fwd:30,roll:-55,mcp:34,ip:40},index:{mcp:0,pip:2,dip:0,spr:8},middle:{mcp:88,pip:102,dip:60,spr:0},ring:{mcp:90,pip:100,dip:60,spr:0},pinky:{mcp:0,pip:2,dip:0,spr:14}},
+  'Corazón':{wrist:{flex:0,dev:0,twist:-70},thumb:{abd:0,fwd:32,roll:-60,mcp:8,ip:4},index:{mcp:55,pip:55,dip:10,spr:0},middle:{mcp:90,pip:102,dip:62,spr:0},ring:{mcp:90,pip:100,dip:60,spr:0},pinky:{mcp:88,pip:98,dip:58,spr:0}},   // corazón coreano: pulgar e índice se juntan; el giro de muñeca lo muestra de frente
   'OK':{wrist:{flex:0,dev:0,twist:0},thumb:{abd:14,fwd:46,roll:-30,mcp:22,ip:24},index:{mcp:46,pip:62,dip:40,spr:0},middle:{mcp:8,pip:8,dip:4,spr:0},ring:{mcp:10,pip:10,dip:5,spr:6},pinky:{mcp:12,pip:12,dip:6,spr:14}},
   'Garra':{wrist:{flex:-20,dev:0,twist:0},thumb:{abd:40,fwd:20,roll:-10,mcp:30,ip:50},index:{mcp:-8,pip:80,dip:60,spr:12},middle:{mcp:-8,pip:84,dip:62,spr:0},ring:{mcp:-8,pip:82,dip:60,spr:8},pinky:{mcp:-8,pip:78,dip:58,spr:18}},
   'Pinza':{wrist:{flex:10,dev:0,twist:0},thumb:{abd:16,fwd:48,roll:-34,mcp:18,ip:14},index:{mcp:42,pip:40,dip:20,spr:0},middle:{mcp:50,pip:60,dip:30,spr:0},ring:{mcp:62,pip:76,dip:40,spr:0},pinky:{mcp:70,pip:84,dip:46,spr:0}},
@@ -1491,7 +1492,7 @@ ob.addEventListener('click',e=>{
 });
 const startsEl=document.getElementById('ob-starts');startsEl.classList.add('two');
 for(const s of [
-  {id:'hand',title:'Mano',text:'Dedos articulados para estudiar gestos de cerca',inc:['9 poses','Dedos y muñeca','Tatuajes y letras']},
+  {id:'hand',title:'Mano',text:'Dedos articulados para estudiar gestos de cerca',inc:['10 poses','Dedos y muñeca','Tatuajes y letras']},
   {id:'body',title:'Cuerpo',text:'Maniquí completo sobre su soporte, con manos articuladas',inc:['8 poses','Canon de 8 o 7.5 cabezas','Altura de la cadera en cm']},
 ]){
   const b=document.createElement('button');b.className='ob-card ob-start';

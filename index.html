@@ -16,31 +16,36 @@
 <meta name="twitter:title" content="Gesto Tool">
 <meta name="twitter:description" content="Maniquíes de dibujo de madera en 3D: posa la mano o el cuerpo, ajusta lente y luz, y úsalos como referencia.">
 <meta name="twitter:image" content="assets/og-image.jpg">
+<!-- Vercel Web Analytics: el script solo existe en el sitio publicado en Vercel; en local no se carga (igual que inject() de @vercel/analytics) -->
+<script>
+  window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};
+  if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&location.protocol!=='file:'){
+    const s=document.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';document.head.appendChild(s);
+  }
+</script>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: marco oscuro con tarjetas redondeadas. Riel de iconos a la izquierda, escenario 3D al centro, tarjetas de control a la derecha (en móvil, todo apilado) */
+/* Layout: marco oscuro con tarjetas redondeadas. Riel de iconos a la izquierda, escenario 3D al centro, tarjetas de control a la derecha (en móvil, todo apilado). Solo tema oscuro */
 :root{
-  --frame:#0d0d0f;
-  --card:#ffffff;
-  --stage:#e3e3e5;
-  --ink:#111113;
-  --on-ink:#ffffff;
-  --muted:#85858d;
-  --line:#ececef;
-  --line-strong:#d2d2d8;
-  --track:#e4e4e8;
+  color-scheme:dark;
+  --frame:#050506;
+  --card:#18181b;
+  --stage:#2a2a2e;
+  --ink:#f2f2f3;
+  --on-ink:#111113;
+  --muted:#9a9aa3;
+  --line:#26262b;
+  --line-strong:#3a3a41;
+  --track:#303036;
   --accent:#ff5a1f;
   --radius:26px;
   --display:"Outfit", "Helvetica Neue", Arial, sans-serif;
   --body:"Outfit", "Helvetica Neue", Arial, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --frame:#050506;--card:#18181b;--stage:#2a2a2e;--ink:#f2f2f3;--on-ink:#111113;--muted:#9a9aa3;--line:#26262b;--line-strong:#3a3a41;--track:#303036;color-scheme:dark}}
-:root[data-theme="dark"]{--frame:#050506;--card:#18181b;--stage:#2a2a2e;--ink:#f2f2f3;--on-ink:#111113;--muted:#9a9aa3;--line:#26262b;--line-strong:#3a3a41;--track:#303036;color-scheme:dark}
 
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
@@ -260,10 +265,6 @@ details.part.flash{animation:flash .9s ease-out}
       <button class="ibtn" id="act-intro" aria-label="Ver introducción">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></svg>
         <span class="tip">Ver introducción</span>
-      </button>
-      <button class="ibtn" id="act-theme" aria-label="Cambiar tema">
-        <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
-        <span class="tip">Tema claro u oscuro</span>
       </button>
     </div>
   </nav>
@@ -1350,17 +1351,10 @@ for(const name of VIEW_NAMES){const b=document.createElement('button');b.textCon
 document.getElementById('act-copy').onclick=copyPose;
 document.getElementById('act-reset').onclick=resetModule;
 document.getElementById('act-jpg').onclick=downloadJPG;
-document.getElementById('act-theme').onclick=()=>{
-  const root=document.documentElement;
-  const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
-  root.dataset.theme=dark?'light':'dark';
-  try{localStorage.setItem('theme',root.dataset.theme);}catch(e){}
-};
-try{const t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}
 
 /* ---------- Miniaturas de poses ---------- */
 /* renderiza cada preset con la cámara inicial del módulo a un lienzo cuadrado y lo deja en su botón */
-const THUMB=220;let thumbsReady=false;
+const THUMB=220;
 function makeThumbs(){
   const pr=renderer.getPixelRatio(),size=renderer.getSize(new THREE.Vector2());
   const pos=camera.position.clone(),fov=camera.fov,aspect=camera.aspect;
@@ -1386,7 +1380,7 @@ function makeThumbs(){
   setShadowBox(...M.shadow);
   camera.position.copy(pos);camera.fov=fov;camera.aspect=aspect;camera.updateProjectionMatrix();camera.lookAt(controls.target);
   renderer.setPixelRatio(pr);renderer.setSize(size.x,size.y,false);
-  thumbsReady=true;capturing=false;
+  capturing=false;
 }
 const cc=document.getElementById('camera');
 slider(cc,'c-lens','Lente',18,135,()=>cam.lens,v=>{cam.lens=v;applyLens();},' mm',()=>{});
@@ -1566,17 +1560,13 @@ function renderCovers(){
 }
 let firstVisit=true;try{firstVisit=!localStorage.getItem('onboarded');}catch(e){}
 
-/* ---------- Tema ---------- */
+/* ---------- Fondo del escenario ---------- */
+/* la escena toma el color de --stage; la sombra del piso va más marcada sobre el fondo oscuro */
 function applyTheme(){
-  const c=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e8e6e2';
-  scene.background=new THREE.Color(c);
-  const dark=new THREE.Color(c).getHSL({}).l<0.4;
-  ground.material.opacity=dark?0.35:0.18;
-  if(thumbsReady)makeThumbs();   // el fondo de las miniaturas sigue al tema
+  scene.background=new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#2a2a2e');
+  ground.material.opacity=0.35;
 }
 applyTheme();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
-new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
 /* ---------- Loop ---------- */
 const readout=document.getElementById('readout');

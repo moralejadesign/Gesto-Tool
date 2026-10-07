@@ -6,6 +6,7 @@ Herramienta web para posar maniquíes de dibujo de madera en 3D y usarlos como r
 
 - Un solo archivo: `index.html` (HTML + CSS + JS inline, sin build).
 - Three.js r147 en build UMD desde jsDelivr, más `OrbitControls` desde `examples/js` (la última versión con UMD es r147; desde r148 hay que usar módulos ES).
+- Analítica: Vercel Web Analytics con el snippet estático en el `<head>` (cola `window.va` + `/_vercel/insights/script.js`). Solo funciona publicado en Vercel con Analytics activado en el proyecto; en localhost no se carga. `@vercel/analytics` está en `package.json`, pero sin build la página no lo importa.
 - `assets/intro.mp4` es el video del onboarding.
 - `assets/` guarda los diseños de tatuaje (PNG con fondo transparente). `assets/alphabet/` es el alfabeto a color (a-z) y `assets/line alphabet/` el de línea (a-z, 0-9). La G del logo es `line alphabet/g.png` usada como máscara CSS; `favicon.png` y `apple-touch-icon.png` son esa G en blanco sobre un círculo casi negro. `og-image.jpg` (1200×628) es la imagen para compartir; las etiquetas `og:` y `twitter:` la apuntan con ruta relativa y hay que cambiarla a URL absoluta cuando el sitio tenga dominio.
 - Hay que servir la carpeta (`npx serve .`): abierto como `file://`, el navegador bloquea las texturas de `assets/` y los tatuajes no cargan.
@@ -101,10 +102,9 @@ La textura es procedural (`makeWoodCanvas`): ruido 3D de valor con fbm, muestrea
 
 ### UI
 - El panel lateral se arma con `slider(container, id, label, min, max, get, set, unit)`. Cada slider lee y escribe el estado mediante closures, y `syncAll()` refresca todos después de un cambio global o un preset.
-- Layout: marco casi negro (`--frame`) con tarjetas blancas de esquinas grandes (`--radius`), monocromo con acento naranja (`--accent`) solo para foco y el destello del acordeón. Columnas: riel de iconos (módulos, Copiar pose, Restablecer, tema), escenario redondeado con el botón circular de Descargar JPG encajado en el borde y la píldora de vistas abajo, y la columna de tarjetas a la derecha.
-- Las poses se eligen con miniaturas: `makeThumbs()` renderiza cada preset con la cámara inicial del módulo a 220 px y se vuelve a llamar al cambiar el tema.
-- El botón de tema guarda `data-theme` en `localStorage`; sin preferencia guardada sigue al sistema.
-- Los colores son tokens CSS en `:root` y tienen variante oscura (`prefers-color-scheme` y `[data-theme]`). El fondo de la escena 3D lee `--stage`.
+- Layout: solo tema oscuro: marco casi negro (`--frame`) con tarjetas gris oscuro de esquinas grandes (`--radius`), monocromo con acento naranja (`--accent`) solo para foco y el destello del acordeón. Columnas: riel de iconos (módulos, Copiar pose, Restablecer, Ver introducción), escenario redondeado con el botón circular de Descargar JPG encajado en el borde y la píldora de vistas abajo, y la columna de tarjetas a la derecha.
+- Las poses se eligen con miniaturas: `makeThumbs()` renderiza cada preset con la cámara inicial del módulo a 220 px.
+- Los colores son tokens CSS en `:root` (`color-scheme: dark`). No hay tema claro ni selector de tema. El fondo de la escena 3D lee `--stage`.
 - Tipografía: Outfit para la interfaz e IBM Plex Mono para los valores numéricos.
 
 ## Convenciones
